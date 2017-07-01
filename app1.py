@@ -2,10 +2,10 @@ from PyQt5.QtWidgets import (QMainWindow, QDesktopWidget,  QWidget, QLCDNumber, 
     QVBoxLayout, QApplication, QLabel, QHBoxLayout, QComboBox, QSplitter,  QAction, QFormLayout,  QInputDialog, QMessageBox, QPushButton,  QGroupBox,  QCheckBox,  QLineEdit,  QFrame,  QDial)
 from PyQt5.QtGui import QIcon, QColor,  QPalette,  QImage,  QPixmap
 import os
-import serial
-from PyQt5.QtCore import Qt,  QRect,  pyqtSignal,  QSignalMapper
+from PyQt5.QtCore import Qt,  QRect,  pyqtSignal,  QSignalMapper, QSize
 import sys
 import time
+from joystick import Joy
 portList=['COM'+str(i) for i in range(1, 4+1)]
 serialSpeedCases=['9600', '14400', '38400', '57600', '115200']
 class Window (QMainWindow):
@@ -125,9 +125,10 @@ class Control(QFrame):
 
         self.controlLayout =  QHBoxLayout()
         
-        self.joystick =  QDial()
-        self.joystick.setMinimumHeight(200)
-        self.joystick.setMinimumWidth(200)
+        self.joystick =  Joy()
+        self.joystick.setMinimumSize(300, 200)
+        #self.joystick.setMinimumWidth(200)
+        self.joystick.sender[int, int].connect(self.do)
         
         self.gaz =  QSlider(Qt.Vertical)
         self.gaz.setMinimumWidth(80)
@@ -165,7 +166,8 @@ class Control(QFrame):
         self.mainLayout.addLayout(self.rotSliderLayout)
         self.mainLayout.addLayout(self.controlLayout)
         self.mainLayout.addLayout(self.bottomLayout)
-        
+    def do(self, a, b):
+        print(a, b)
     def createConnecter(self):
         self.connectGB =  QGroupBox(self)
         
