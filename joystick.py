@@ -13,10 +13,10 @@ class Joy(QFrame):
     R = 60
     size = (200, 200)
     
-    def __init__(self, maxRange):
+    def __init__(self, maxRange, color = Qt.darkBlue):
         super().__init__()
-        self.setFrameShape(QFrame.StyledPanel)
         self.maxRange = maxRange
+        self.joyColor = color
         if __name__ == "__main__":
             self.setGeometry(300, 300, *self.size)
             self.show()
@@ -77,7 +77,7 @@ class Joy(QFrame):
         p.drawEllipse(self.pos[0]-self.R+3, self.pos[1]-self.R+8, self.R*2, self.R*2)
         
         p.setOpacity(1)
-        p.setBrush(Qt.darkBlue)
+        p.setBrush(self.joyColor)
         p.setPen(Qt.blue)
         p.drawEllipse(self.pos[0]-self.R, self.pos[1]-self.R, self.R*2, self.R*2)
         
