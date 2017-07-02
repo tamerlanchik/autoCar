@@ -12,8 +12,8 @@ class Window (QMainWindow):
     def __init__(self):
         super().__init__()
         self.statusbar =  self.statusBar()
-        self.cont =  Content(self)
-        #self.cont.ms[str].connect(self.statusBar().showMessage)
+        self.cont =  Content(self, QDesktopWidget().screenGeometry())
+        self.cont.res[int, int].connect(self.resiz)
         #self.statusBar().showMessage("qqqqqqqqqqq")
         self.setCentralWidget(self.cont)
         self.setBackground()
@@ -23,63 +23,105 @@ class Window (QMainWindow):
         self.setWindowIcon(QIcon('icon.jpg'))
         
         self.show()
+    def resiz(self, a, b):
+        #self.resize(a, b)
+        self.setMaximumWidth(a)
+        self.statusBar().showMessage(str((a, b, self.geometry().width())))
+        self.update()
     def setBackground(self):
         pal =  QPalette()
         pal.setColor(QPalette.Background,  Qt.white)
         self.setAutoFillBackground(True)
         self.setPalette(pal)        
     def center(self):
+        
         screen =  QDesktopWidget().screenGeometry()
-        self.resize(screen.width()/ 4,  screen.height() / 4)
+        print(screen)
+        self.resize(screen.width()/ 2,  screen.height() / 2)
         size =  self.geometry()
-        x =  (screen.width() - size.width()) / 2
-        y = (screen.height() - size.height()) / 2
+        #x =  (screen.width() - size.width()) / 2
+        #y = (screen.height() - size.height()) / 2
+        x = 10
+        y = 10
         self.move(x,  y)        
 class Content(QWidget):
-    #ms =  pyqtSignal(str)
-    windows =  [False] * 5
-    #windows[0] = True
-    def __init__(self,  parent):
+    numberOfWidgets = 6
+    res =  pyqtSignal(int, int)
+    windows =  [True] * numberOfWidgets
+    windows[0]=True
+    def __init__(self,  parent, screen):
         super().__init__(parent)
+        self.screen = screen
         self.create()
     def create(self):
         self.mainBox =  QVBoxLayout(self)
         
         self.hor1Box =  QHBoxLayout()
+        self.widgets = [0]*5
+        self.controlSplitter1 =  QSplitter(Qt.Horizontal)
+        #self.controlSplitter1 = QHBoxLayout()
+        self.controlSplitter2 = QSplitter(Qt.Horizontal)
         
-        self.controlSplitter =  QSplitter(Qt.Horizontal)
-        self.control =  Control()
-        self.controlSplitter.addWidget(self.control)
-        self.control.changeWindSignal[int].connect(self.changeWindows)
+        self.widgets[0] =  Control()
+        self.widgets[0].changeWindSignal[int, int].connect(self.changeWindows)
         
-        if self.windows[0] ==  True:
-            self.camera =  Camera()
-            print("eef")
-            self.controlSplitter.addWidget(self.camera)
-            
+        self.widgets[1] =  Camera() 
         
-        self.hor1Box.addWidget(self.controlSplitter)
+        self.widgets[2] = Map()
+        
+        self.widgets[3] = Locator()
+        
+        for i in range(3):
+            self.controlSplitter1.addWidget(self.widgets[i])
+            if self.windows[i] == True:            
+                self.widgets[i].show()
+            else:
+                self.widgets[i].hide()
+        for i in range(3, 4):
+            self.controlSplitter2.addWidget(self.widgets[i])
+            if self.windows[i] == True:            
+                self.widgets[i].show()
+            else:
+                self.widgets[i].hide()        
+        
+        #self.hor1Box.addWidget(self.controlSplitter)
         print(self.windows)
         
-        self.mainBox.addWidget(self.controlSplitter)
-        self.mainBox.addStretch(1)
+        self.mainBox.addWidget(self.controlSplitter1)
+        self.mainBox.addWidget(self.controlSplitter2)
+        #self.mainBox.addStretch(1)
         self.setLayout(self.mainBox)        
     def sendMessage(self,  m):
         self.msg.emit('Hi')
-    def changeWindows(self,  i):
-        print(i)
-        self.windows[i] =   not self.windows[i]
-        self.create()
+    def changeWindows(self,  i, state):
+        print(i, state)
+        self.windows[i+1] =   bool(state)
+        if self.windows[i+1] == False:
+            self.widgets[i+1].hide()
+            self.res.emit(400,  400)
+            self.setMaximumWidth(400)
+        elif self.windows[i+1] == True:      
+            self.widgets[i+1].show()
+            self.res.emit(890, 400)
+            self.setMaximumWidth(890)
         self.update()
-class Control(QFrame):
-    changeWindSignal =  pyqtSignal(int)
+class Widgets(QFrame):
+    def __init__(self):
+        super().__init__()
+        self.setFrameShape(QFrame.StyledPanel)
+        self.mainLayout =  QVBoxLayout(self)
+        self.setMaximumWidth(400)
+        self.setMaximumHeight(400)        
+        self.create()  
+    def create(self):
+        self.mainWidgetLayout =  QVBoxLayout()
+        self.mainLayout.addLayout(self.mainWidgetLayout)    
+class Control(Widgets):
+    changeWindSignal =  pyqtSignal(int, int)
     global portList
     global serialSpeedCases
     def __init__(self):
         super().__init__()
-        self.setFrameShape(QFrame.StyledPanel)
-        #self.msg.emit('fefdsf')
-        self.mainLayout =  QVBoxLayout(self)
         self.createMenu()
         self.createControl()
         self.createConnecter()
@@ -90,7 +132,9 @@ class Control(QFrame):
         self.gb.setTitle('Windows')
         self.menuLayout =  QHBoxLayout()
         self.gb.setLayout(self.menuLayout)
-        self.mainLayout.addLayout(self.gbLayout)
+        self.mainWidgetLayout.addLayout(self.gbLayout)
+        self.setMaximumWidth(400)
+        self.setMaximumHeight(400)
         
         self.lis =  ('Camera',  'Map',  'Locator (atop)',  'locator (side)',  'Collisions')
         self.menu =  [0] * 5
@@ -105,7 +149,8 @@ class Control(QFrame):
         self.bLog =  QPushButton('Log')
         self.bSettings =  QPushButton('set')
     def changeWindows(self,  i):
-        self.changeWindSignal.emit(i)
+        state = self.menu[i].checkState()
+        self.changeWindSignal.emit(i, state)
     def createControl(self):
         #self.msg.emit("Hello")
         self.rotSliderLayout =  QHBoxLayout()
@@ -163,9 +208,9 @@ class Control(QFrame):
         self.bottomLayout.addWidget(self.lineSpeed)
         self.bottomLayout.addStretch(1)
         
-        self.mainLayout.addLayout(self.rotSliderLayout)
-        self.mainLayout.addLayout(self.controlLayout)
-        self.mainLayout.addLayout(self.bottomLayout)
+        self.mainWidgetLayout.addLayout(self.rotSliderLayout)
+        self.mainWidgetLayout.addLayout(self.controlLayout)
+        self.mainWidgetLayout.addLayout(self.bottomLayout)
     def do(self, a, b):
         print(a, b)
     def createConnecter(self):
@@ -193,7 +238,7 @@ class Control(QFrame):
         self.connectGBLayout.addLayout(self.chooseSpeedBox)
         
         self.connectGB.setLayout(self.connectGBLayout)
-        self.mainLayout.addWidget(self.connectGB)
+        self.mainWidgetLayout.addWidget(self.connectGB)
         
         self.pConnect =  QPushButton('Disconnected')
         self.pSending =  QPixmap('pause.png')
@@ -208,15 +253,13 @@ class Control(QFrame):
 
 
 
-class Camera(QFrame):
+class Camera(Widgets):
     def __init__(self):
         super().__init__()
-        self.setFrameShape(QFrame.StyledPanel)
-        self.mainLayout =  QVBoxLayout(self)
         self.createControl()
     def createControl(self):
-        self.controlLayout =  QHBoxLayout()
-        
+    
+        self.cameraHBox = QHBoxLayout()
         self.joy1Layout =  QVBoxLayout()
         self.joy1Label =  QFormLayout()
         self.joy1Line =  QLineEdit('0')
@@ -242,11 +285,20 @@ class Camera(QFrame):
         self.joy2Layout.addLayout(self.joy2Label)
         self.joy2Layout.addWidget(self.joystick2)
         self.joy2Layout.addStretch(1)
-        
-        self.controlLayout.addLayout(self.joy1Layout)
-        self.controlLayout.addLayout(self.joy2Layout)
-        
-        self.mainLayout.addLayout(self.controlLayout)
+    
+        self.cameraHBox.addLayout(self.joy1Layout)
+        self.cameraHBox.addLayout(self.joy2Layout)
+        self.mainWidgetLayout.addLayout(self.cameraHBox)  
+class Map(Widgets):
+    def __init__(self):
+        super().__init__()   
+
+class Locator(Widgets):
+    def __init__(self):
+        super().__init__()
+
+
+
 if __name__ == "__main__":
     app = QApplication([])
     window = Window()
