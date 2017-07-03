@@ -2,18 +2,20 @@ from PyQt5.QtWidgets import (QMainWindow, QDesktopWidget,  QWidget, QLCDNumber, 
     QVBoxLayout, QApplication, QLabel, QHBoxLayout, QComboBox, QSplitter,  QAction, QFormLayout,  QInputDialog, QMessageBox, QPushButton,  QGroupBox,  QCheckBox,  QLineEdit,  QFrame,  QDial)
 from PyQt5.QtGui import QIcon, QColor,  QPalette,  QImage,  QPixmap
 import os
-import serial
-from PyQt5.QtCore import Qt,  QRect,  pyqtSignal,  QSignalMapper
+from PyQt5.QtCore import Qt,  QRect,  pyqtSignal,  QSignalMapper, QSize
 import sys
 import time
+from joystick import Joy
 portList=['COM'+str(i) for i in range(1, 4+1)]
 serialSpeedCases=['9600', '14400', '38400', '57600', '115200']
+rotate = 0
+gaz = 0
 class Window (QMainWindow):
     def __init__(self):
         super().__init__()
         self.statusbar =  self.statusBar()
-        self.cont =  Content(self)
-        #self.cont.ms[str].connect(self.statusBar().showMessage)
+        self.cont =  Content(self, QDesktopWidget().screenGeometry())
+        self.cont.res[int, int].connect(self.resiz)
         #self.statusBar().showMessage("qqqqqqqqqqq")
         self.setCentralWidget(self.cont)
         self.setBackground()
@@ -23,63 +25,95 @@ class Window (QMainWindow):
         self.setWindowIcon(QIcon('icon.jpg'))
         
         self.show()
+    def resiz(self, a, b):
+        #self.resize(a, b)
+        self.setMaximumWidth(a)
+        self.statusBar().showMessage(str((a, b, self.geometry().width())))
+        self.update()
     def setBackground(self):
         pal =  QPalette()
         pal.setColor(QPalette.Background,  Qt.white)
         self.setAutoFillBackground(True)
         self.setPalette(pal)        
     def center(self):
+        
         screen =  QDesktopWidget().screenGeometry()
-        self.resize(screen.width()/ 4,  screen.height() / 4)
+        print(screen)
+        self.resize(screen.width()/ 2,  screen.height() / 2)
         size =  self.geometry()
-        x =  (screen.width() - size.width()) / 2
-        y = (screen.height() - size.height()) / 2
+        #x =  (screen.width() - size.width()) / 2
+        #y = (screen.height() - size.height()) / 2
+        x = 10
+        y = 10
         self.move(x,  y)        
 class Content(QWidget):
-    #ms =  pyqtSignal(str)
-    windows =  [False] * 5
-    #windows[0] = True
-    def __init__(self,  parent):
+    numberOfWidgets = 6
+    res =  pyqtSignal(int, int)
+    windows =  [True] * numberOfWidgets
+    windows[0]=True
+    def __init__(self,  parent, screen):
         super().__init__(parent)
+        self.screen = screen
         self.create()
     def create(self):
         self.mainBox =  QVBoxLayout(self)
         
-        self.hor1Box =  QHBoxLayout()
+        self.widgets = [0]*self.numberOfWidgets
         
-        self.controlSplitter =  QSplitter(Qt.Horizontal)
-        self.control =  Control()
-        self.controlSplitter.addWidget(self.control)
-        self.control.changeWindSignal[int].connect(self.changeWindows)
+        self.controlSplitter = [0]*2
+        for i in range(2):
+            self.controlSplitter[i] =  QSplitter(Qt.Horizontal)
+            self.mainBox.addWidget(self.controlSplitter[i])
         
-        if self.windows[0] ==  True:
-            self.camera =  Camera()
-            print("eef")
-            self.controlSplitter.addWidget(self.camera)
-            
+        #creating widgets
+        self.widgets = [ Control(), Camera(), Map(), Locator_aside(), Locator_atop(),  Collisions() ]
         
-        self.hor1Box.addWidget(self.controlSplitter)
-        print(self.windows)
+        self.widgets[0].changeWindSignal[int, int].connect(self.changeWindows)
         
-        self.mainBox.addWidget(self.controlSplitter)
-        self.mainBox.addStretch(1)
+        #adding widgets to the layout
+        for i in range(self.numberOfWidgets):
+            self.controlSplitter[i//3].addWidget(self.widgets[i])
+            if self.windows[i] == True:            
+                self.widgets[i].show()
+            else:
+                self.widgets[i].hide()   
+        
         self.setLayout(self.mainBox)        
     def sendMessage(self,  m):
         self.msg.emit('Hi')
-    def changeWindows(self,  i):
-        print(i)
-        self.windows[i] =   not self.windows[i]
-        self.create()
+    def changeWindows(self,  i, state):
+        self.windows[i+1] =   bool(state)
+        
+        if self.windows[i+1] == False:
+            self.widgets[i+1].hide()
+            self.res.emit(400,  400)
+            self.setMaximumWidth(400)
+            
+        elif self.windows[i+1] == True:      
+            self.widgets[i+1].show()
+            self.res.emit(890, 400)
+            self.setMaximumWidth(890)
+            
         self.update()
-class Control(QFrame):
-    changeWindSignal =  pyqtSignal(int)
-    global portList
-    global serialSpeedCases
+class Widgets(QFrame):
     def __init__(self):
         super().__init__()
-        self.setFrameShape(QFrame.StyledPanel)
-        #self.msg.emit('fefdsf')
-        self.mainLayout =  QVBoxLayout(self)
+        self.setFrameShape(QFrame.StyledPanel)     
+        self.create()  
+        
+    def create(self):
+        self.mainWidgetLayout =  QVBoxLayout(self)
+        self.setLayout(self.mainWidgetLayout) 
+        
+class Control(Widgets):
+    changeWindSignal =  pyqtSignal(int, int)
+    global portList
+    global serialSpeedCases
+    global rotate
+    global gaz
+    maxRange = {'x':(-90, 90), 'y': (-30, 30) }
+    def __init__(self):
+        super().__init__()
         self.createMenu()
         self.createControl()
         self.createConnecter()
@@ -90,7 +124,9 @@ class Control(QFrame):
         self.gb.setTitle('Windows')
         self.menuLayout =  QHBoxLayout()
         self.gb.setLayout(self.menuLayout)
-        self.mainLayout.addLayout(self.gbLayout)
+        self.mainWidgetLayout.addLayout(self.gbLayout)
+        self.setMaximumWidth(400)
+        self.setMaximumHeight(400)
         
         self.lis =  ('Camera',  'Map',  'Locator (atop)',  'locator (side)',  'Collisions')
         self.menu =  [0] * 5
@@ -105,15 +141,18 @@ class Control(QFrame):
         self.bLog =  QPushButton('Log')
         self.bSettings =  QPushButton('set')
     def changeWindows(self,  i):
-        self.changeWindSignal.emit(i)
+        state = self.menu[i].checkState()
+        #self.changeWindSignal.emit(i, state)
     def createControl(self):
         #self.msg.emit("Hello")
         self.rotSliderLayout =  QHBoxLayout()
         
         self.rotSlider =  QSlider(Qt.Horizontal)
+        self.rotSlider.setRange(*self.maxRange['x'])
         self.rotSlider.setMinimumWidth(300)
-        self.rotSlider.setTickInterval(2)
-        self.rotSlider.setTickPosition(QSlider().TicksBothSides)        
+        self.rotSlider.setTickInterval(5)
+        self.rotSlider.setTickPosition(QSlider().TicksBothSides)
+        self.rotSlider.valueChanged[int].connect(self.rotSliderChanged)
         self.rotLabel =  QLabel('Rotate')
         self.rotLine =  QLineEdit('0')
         self.rotLine.setMaximumWidth(30)
@@ -125,18 +164,22 @@ class Control(QFrame):
 
         self.controlLayout =  QHBoxLayout()
         
-        self.joystick =  QDial()
-        self.joystick.setMinimumHeight(200)
-        self.joystick.setMinimumWidth(200)
+        self.joystick =  Joy(self.maxRange)
+        self.joystick.setFocusPolicy(Qt.StrongFocus)
+        self.joystick.setMinimumSize(300, 200)
+        self.joystick.sender[int, int].connect(self.joystickMoved)
         
-        self.gaz =  QSlider(Qt.Vertical)
-        self.gaz.setMinimumWidth(80)
-        self.gaz.setTickInterval(5)
-        self.gaz.setTickPosition(QSlider().TicksBothSides)
+        
+        self.gazSlider =  QSlider(Qt.Vertical)
+        self.gazSlider.setRange(*self.maxRange['y'])
+        self.gazSlider.setMinimumWidth(80)
+        self.gazSlider.setTickInterval(2)
+        self.gazSlider.setTickPosition(QSlider().TicksBothSides)
+        self.gazSlider.valueChanged[int].connect(self.gazSliderChanged)
         self.controlLayout.addStretch(1)
         self.controlLayout.addWidget(self.joystick)
         self.controlLayout.addStretch(1)
-        self.controlLayout.addWidget(self.gaz)
+        self.controlLayout.addWidget(self.gazSlider)
         self.controlLayout.addStretch(1)
         
         self.bottomLayout =  QHBoxLayout()
@@ -151,6 +194,8 @@ class Control(QFrame):
         
         self.labelSpeed =  QLabel('Speed')
         self.lineSpeed =  QLineEdit('0')
+        self.gazLabel =  QLabel('Gas')
+        self.gazLine =  QLineEdit('0')        
         self.lineSpeed.setMaximumWidth(50)
         self.bottomLayout.addWidget(self.bKey)
         self.bottomLayout.addWidget(self.bFix)
@@ -160,11 +205,13 @@ class Control(QFrame):
         self.bottomLayout.addStretch(1)
         self.bottomLayout.addWidget(self.labelSpeed)
         self.bottomLayout.addWidget(self.lineSpeed)
+        self.bottomLayout.addWidget(self.gazLabel)
+        self.bottomLayout.addWidget(self.gazLine)
         self.bottomLayout.addStretch(1)
         
-        self.mainLayout.addLayout(self.rotSliderLayout)
-        self.mainLayout.addLayout(self.controlLayout)
-        self.mainLayout.addLayout(self.bottomLayout)
+        self.mainWidgetLayout.addLayout(self.rotSliderLayout)
+        self.mainWidgetLayout.addLayout(self.controlLayout)
+        self.mainWidgetLayout.addLayout(self.bottomLayout)
         
     def createConnecter(self):
         self.connectGB =  QGroupBox(self)
@@ -191,7 +238,7 @@ class Control(QFrame):
         self.connectGBLayout.addLayout(self.chooseSpeedBox)
         
         self.connectGB.setLayout(self.connectGBLayout)
-        self.mainLayout.addWidget(self.connectGB)
+        self.mainWidgetLayout.addWidget(self.connectGB)
         
         self.pConnect =  QPushButton('Disconnected')
         self.pSending =  QPixmap('pause.png')
@@ -202,19 +249,46 @@ class Control(QFrame):
         self.connectGBLayout.addWidget(self.lSending)
         self.connectGBLayout.addWidget(self.pCheck)
 
-
-
-
-
-class Camera(QFrame):
+    def rotSliderChanged(self, rot):
+        global rotate
+        rotate = rot
+        self.updateControls()
+    def gazSliderChanged(self, gaze):
+        global gaz
+        gaz = gaze
+        self.updateControls()
+    def updateControls(self):
+        self.rotLine.setText(str(rotate))
+        self.gazLine.setText(str(gaz))
+        self.joystick.setPosition(rotate, gaz)
+        self.rotSlider.setValue(rotate)
+        self.gazSlider.setValue(gaz)
+    def joystickMoved(self, x, y):
+        global gaz
+        global rotate
+        gaz = y
+        rotate = x
+        self.updateControls()
+        
+class Camera(Widgets):
+    maxRange = { 'x': [-90, 90], 'y': [-90, 90] }
     def __init__(self):
         super().__init__()
-        self.setFrameShape(QFrame.StyledPanel)
-        self.mainLayout =  QVBoxLayout(self)
         self.createControl()
     def createControl(self):
-        self.controlLayout =  QHBoxLayout()
-        
+    
+        self.joyLayout = QHBoxLayout()
+        self.joystick = Joy(self.maxRange)
+        self.joystick.setMinimumSize(200, 200)
+        self.joyLayout.addWidget(self.joystick)
+        self.mainWidgetLayout.addLayout(self.joyLayout) 
+class Map(Widgets):
+    def __init__(self):
+        super().__init__() 
+        self.createControl()
+    def createControl(self):
+    
+        self.cameraHBox = QHBoxLayout()
         self.joy1Layout =  QVBoxLayout()
         self.joy1Label =  QFormLayout()
         self.joy1Line =  QLineEdit('0')
@@ -240,11 +314,122 @@ class Camera(QFrame):
         self.joy2Layout.addLayout(self.joy2Label)
         self.joy2Layout.addWidget(self.joystick2)
         self.joy2Layout.addStretch(1)
-        
-        self.controlLayout.addLayout(self.joy1Layout)
-        self.controlLayout.addLayout(self.joy2Layout)
-        
-        self.mainLayout.addLayout(self.controlLayout)
+    
+        self.cameraHBox.addLayout(self.joy1Layout)
+        self.cameraHBox.addLayout(self.joy2Layout)
+        self.mainWidgetLayout.addLayout(self.cameraHBox)         
+
+class Locator_aside(Widgets):
+    def __init__(self):
+        super().__init__()
+        self.createControl()
+    def createControl(self):
+    
+        self.cameraHBox = QHBoxLayout()
+        self.joy1Layout =  QVBoxLayout()
+        self.joy1Label =  QFormLayout()
+        self.joy1Line =  QLineEdit('0')
+        self.joy1Line.setMaximumWidth(50)
+        self.joy1Label.addRow("Horizontal angle",  self.joy1Line)
+        self.joystick1 =  QDial()
+        self.joystick1.setMinimumHeight(200)
+        self.joystick1.setMinimumWidth(200)
+        self.joy1Layout.addStretch(1)
+        self.joy1Layout.addLayout(self.joy1Label)
+        self.joy1Layout.addWidget(self.joystick1)
+        self.joy1Layout.addStretch(1)
+    
+        self.joy2Layout =  QVBoxLayout()
+        self.joy2Label =  QFormLayout()
+        self.joy2Line =  QLineEdit('0')
+        self.joy2Line.setMaximumWidth(50)
+        self.joy2Label.addRow("Vertical angle",  self.joy2Line)
+        self.joystick2 =  QDial()
+        self.joystick2.setMinimumHeight(200)
+        self.joystick2.setMinimumWidth(200)
+        self.joy2Layout.addStretch(1)
+        self.joy2Layout.addLayout(self.joy2Label)
+        self.joy2Layout.addWidget(self.joystick2)
+        self.joy2Layout.addStretch(1)
+    
+        self.cameraHBox.addLayout(self.joy1Layout)
+        self.cameraHBox.addLayout(self.joy2Layout)
+        self.mainWidgetLayout.addLayout(self.cameraHBox)         
+class Locator_atop(Widgets):
+    def __init__(self):
+        super().__init__()
+        self.createControl()
+    def createControl(self):
+    
+        self.cameraHBox = QHBoxLayout()
+        self.joy1Layout =  QVBoxLayout()
+        self.joy1Label =  QFormLayout()
+        self.joy1Line =  QLineEdit('0')
+        self.joy1Line.setMaximumWidth(50)
+        self.joy1Label.addRow("Horizontal angle",  self.joy1Line)
+        self.joystick1 =  QDial()
+        self.joystick1.setMinimumHeight(200)
+        self.joystick1.setMinimumWidth(200)
+        self.joy1Layout.addStretch(1)
+        self.joy1Layout.addLayout(self.joy1Label)
+        self.joy1Layout.addWidget(self.joystick1)
+        self.joy1Layout.addStretch(1)
+    
+        self.joy2Layout =  QVBoxLayout()
+        self.joy2Label =  QFormLayout()
+        self.joy2Line =  QLineEdit('0')
+        self.joy2Line.setMaximumWidth(50)
+        self.joy2Label.addRow("Vertical angle",  self.joy2Line)
+        self.joystick2 =  QDial()
+        self.joystick2.setMinimumHeight(200)
+        self.joystick2.setMinimumWidth(200)
+        self.joy2Layout.addStretch(1)
+        self.joy2Layout.addLayout(self.joy2Label)
+        self.joy2Layout.addWidget(self.joystick2)
+        self.joy2Layout.addStretch(1)
+    
+        self.cameraHBox.addLayout(self.joy1Layout)
+        self.cameraHBox.addLayout(self.joy2Layout)
+        self.mainWidgetLayout.addLayout(self.cameraHBox)         
+
+class Collisions(Widgets):
+    def __init__(self):
+        super().__init__()
+        self.createControl()
+    def createControl(self):
+    
+        self.cameraHBox = QHBoxLayout()
+        self.joy1Layout =  QVBoxLayout()
+        self.joy1Label =  QFormLayout()
+        self.joy1Line =  QLineEdit('0')
+        self.joy1Line.setMaximumWidth(50)
+        self.joy1Label.addRow("Horizontal angle",  self.joy1Line)
+        self.joystick1 =  QDial()
+        self.joystick1.setMinimumHeight(200)
+        self.joystick1.setMinimumWidth(200)
+        self.joy1Layout.addStretch(1)
+        self.joy1Layout.addLayout(self.joy1Label)
+        self.joy1Layout.addWidget(self.joystick1)
+        self.joy1Layout.addStretch(1)
+    
+        self.joy2Layout =  QVBoxLayout()
+        self.joy2Label =  QFormLayout()
+        self.joy2Line =  QLineEdit('0')
+        self.joy2Line.setMaximumWidth(50)
+        self.joy2Label.addRow("Vertical angle",  self.joy2Line)
+        self.joystick2 =  QDial()
+        self.joystick2.setMinimumHeight(200)
+        self.joystick2.setMinimumWidth(200)
+        self.joy2Layout.addStretch(1)
+        self.joy2Layout.addLayout(self.joy2Label)
+        self.joy2Layout.addWidget(self.joystick2)
+        self.joy2Layout.addStretch(1)
+    
+        self.cameraHBox.addLayout(self.joy1Layout)
+        self.cameraHBox.addLayout(self.joy2Layout)
+        self.mainWidgetLayout.addLayout(self.cameraHBox)         
+
+
 if __name__ == "__main__":
     app = QApplication([])
     window = Window()
