@@ -12,6 +12,7 @@ class Joy(QFrame):
     shiftPos = [0, 0]
     R = 60
     size = (200, 200)
+    flag =  False
     
     def __init__(self, maxRange, color = Qt.darkBlue):
         super().__init__()
@@ -29,34 +30,39 @@ class Joy(QFrame):
         self.sender.emit(pos[0], -pos[1])
         
     def mouseMoveEvent(self, event):
-        x = event.pos().x()-self.size[0]//2  #getting mouse coorditates in the translated coordintion system
-        y = event.pos().y()-self.size[1]//2 
-        
-        x -= self.shiftPos[0] # getting coordinates of the joystick centre
-        y -= self.shiftPos[1]
-        
-        
-        if self.maxRange['x'][0]<= x <= self.maxRange['x'][1]:
-            self.pos[0] = x
-        else:
-            if abs(self.maxRange['x'][0] - x) < abs(self.maxRange['x'][1] - x):
-                self.pos[0] = self.maxRange['x'][0]
+        if self.flag:
+            x = event.pos().x()-self.size[0]//2  #getting mouse coorditates in the translated coordintion system
+            y = event.pos().y()-self.size[1]//2 
+            
+            x -= self.shiftPos[0] # getting coordinates of the joystick centre
+            y -= self.shiftPos[1]
+            
+            
+            if self.maxRange['x'][0]<= x <= self.maxRange['x'][1]:
+                self.pos[0] = x
             else:
-                self.pos[0] = self.maxRange['x'][1]
-        
-        if self.maxRange['y'][0]<=y <= self.maxRange['y'][1]:
-            self.pos[1] = y
-        else:
-            if abs(self.maxRange['y'][0] - y) < abs(self.maxRange['y'][1] - y):
-                self.pos[1] = self.maxRange['y'][0]
+                if abs(self.maxRange['x'][0] - x) < abs(self.maxRange['x'][1] - x):
+                    self.pos[0] = self.maxRange['x'][0]
+                else:
+                    self.pos[0] = self.maxRange['x'][1]
+            
+            if self.maxRange['y'][0]<=y <= self.maxRange['y'][1]:
+                self.pos[1] = y
             else:
-                self.pos[1] = self.maxRange['y'][1]      
-        self.send(self.pos)
-        self.update()
+                if abs(self.maxRange['y'][0] - y) < abs(self.maxRange['y'][1] - y):
+                    self.pos[1] = self.maxRange['y'][0]
+                else:
+                    self.pos[1] = self.maxRange['y'][1]      
+            self.send(self.pos)
+            self.update()
         
     def mousePressEvent(self, event):
         x, y = event.pos().x()-self.size[0]//2, event.pos().y()-self.size[1]//2
-        self.shiftPos = [x, y]
+        if (x ** 2 +  y ** 2) <=  (self.R * 1.1) ** 2:
+            self.shiftPos = [x, y]
+            self.flag =  True
+        else:
+            self.flag =  False
         
     def mouseReleaseEvent(self, event):
         self.pos = [0, 0]
