@@ -11,7 +11,9 @@ import subprocess
 import sys
 from app1 import Window
 #from communicator import Communicator
+
 class Main(QMainWindow):
+    def __init__(self):
         super().__init__()
         print('s')
         #self.statusBar().showMessage('Hello')
