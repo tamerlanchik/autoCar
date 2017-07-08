@@ -375,39 +375,48 @@ class Locator_aside(Widgets):
         self.cameraHBox.addLayout(self.joy2Layout)
         self.mainWidgetLayout.addLayout(self.cameraHBox)         
 class Locator_atop(Widgets):
-    #points = ((-80, -80), (-80, -90), (-100, -100), (-110, -50), (-150, -60))
     points = ( (-100, -100), (-80, -180), (-70, -120), (-60, -220) )
     def __init__(self):
         super().__init__()
         self.setMinimumWidth(400)
-        self.iconLocator = QPixmap('locator.png')
-        #self.createControl()
+        self.iconLocator = QPixmap('locator-atop.png')
         self.points = self.points[::-1]
     def paintEvent(self, event):
         geom  = self.geometry()
         self.p = QPainter(self)
-        self.p.setRenderHint(QPainter.Antialiasing)
-        self.p.setRenderHint(QPainter.SmoothPixmapTransform)
+        self.p.setRenderHint(QPainter.Antialiasing)   #smoothing for lines
+        self.p.setRenderHint(QPainter.SmoothPixmapTransform)  #smoothing for Pixmap
         self.p.setPen(Qt.blue)        
         
+        #drawing grid & scale numbers
         step = 20
         self.p.setOpacity(0.2)
         for i in range(geom.width()//step):
             self.p.drawLine(i*step, 0, i*step, geom.height())
         for i in range(geom.height()//step):
-            self.p.drawLine(0, i*step,  geom.width(), i*step)        
-        
-        self.p.setOpacity(1)
-        self.p.drawLine(0, geom.height()*0.9, geom.width(), geom.height()*0.9)   
-        
+            self.p.drawLine(0, i*step,  geom.width(), i*step) 
+        self.p.setOpacity(0.7)
         self.p.translate(geom.width()//2, geom.height()*0.9)
-        self.p.rotate(30)
-        self.p.drawLine(0, 0, 0, -geom.height()*0.9)
-        self.p.drawPixmap(-20, -27, self.iconLocator)
+        for i in range(-geom.width()//(step*2), geom.width()//(step*2), 2):
+            self.p.drawText(i*step-10, 10, str(i*step))
+        for i in range(0, -geom.height()//step, -2):
+            self.p.drawText(-geom.width()//2, i*step+5, str(i*step))        
+        #-----------------------------------------------------------
         
+        #drawing locator
+        self.p.setOpacity(1)
+        self.p.drawLine(-geom.width()//2, 0, geom.width(), 0)   #hor Line
+        
+        self.p.rotate(30)
+        self.p.drawLine(0, 0, 0, -geom.height()*0.9) #rotatable line
+        self.p.drawPixmap(-20, -27, self.iconLocator) #locator icon
+        #-----------------------------------------------------------
+        
+        #drawing barrier map
         self.p.rotate(-30)
         self.p.setBrush(Qt.blue)
         self.p.setOpacity(0.2)
+        
         self.polygon = QPolygonF()
         self.polygon.append(QPointF(-geom.width()//2, self.points[-1][1]))
         self.polygon.append(QPointF(-geom.width()//2, -geom.height()*0.9))
