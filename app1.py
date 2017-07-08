@@ -6,16 +6,22 @@ from PyQt5.QtCore import Qt,  QRect,  pyqtSignal,  QSignalMapper, QSize
 import sys
 import time
 from joystick import Joy
+#from communicator import Communicator
+
+from multiprocessing import Process
 portList=['COM'+str(i) for i in range(1, 4+1)]
 serialSpeedCases=['9600', '14400', '38400', '57600', '115200']
 rotate = 0
 gaz = 0
 class Window (QMainWindow):
+    sendo =  pyqtSignal(int,  int)
     def __init__(self):
+        print('window')
         super().__init__()
         self.statusbar =  self.statusBar()
         self.cont =  Content(self, QDesktopWidget().screenGeometry())
         self.cont.res[int, int].connect(self.resiz)
+        self.cont.send[int,  int].connect(self.sendData)
         #self.statusBar().showMessage("qqqqqqqqqqq")
         self.setCentralWidget(self.cont)
         self.setBackground()
@@ -24,7 +30,14 @@ class Window (QMainWindow):
         self.setWindowTitle('Navigare')
         self.setWindowIcon(QIcon('icon.jpg'))
         
+        #self.comm =  Communicator()
+        
         self.show()
+        '''app1 = QApplication([])
+        sys.exit(app1.exec_())'''
+    def sendData(self,  a,  b):
+        self.sendo.emit(a,  b)
+        self.statusBar().showMessage(str(a))
     def resiz(self, a, b):
         #self.resize(a, b)
         self.setMaximumWidth(a)
@@ -38,7 +51,6 @@ class Window (QMainWindow):
     def center(self):
         
         screen =  QDesktopWidget().screenGeometry()
-        print(screen)
         self.resize(screen.width()/ 2,  screen.height() / 2)
         size =  self.geometry()
         #x =  (screen.width() - size.width()) / 2
@@ -49,6 +61,7 @@ class Window (QMainWindow):
 class Content(QWidget):
     numberOfWidgets = 6
     res =  pyqtSignal(int, int)
+    send =  pyqtSignal(int, int)
     windows =  [True] * numberOfWidgets
     windows[0]=True
     def __init__(self,  parent, screen):
@@ -72,13 +85,16 @@ class Content(QWidget):
         
         #adding widgets to the layout
         for i in range(self.numberOfWidgets):
+            self.widgets[i].send[int,  int].connect(self.sendData)
             self.controlSplitter[i//3].addWidget(self.widgets[i])
             if self.windows[i] == True:            
                 self.widgets[i].show()
             else:
                 self.widgets[i].hide()   
         
-        self.setLayout(self.mainBox)        
+        self.setLayout(self.mainBox)
+    def sendData(self,  a,  b):
+        self.send.emit(a,  b)
     def sendMessage(self,  m):
         self.msg.emit('Hi')
     def changeWindows(self,  i, state):
@@ -96,13 +112,13 @@ class Content(QWidget):
             
         self.update()
 class Widgets(QFrame):
+    send =  pyqtSignal(int,  int)
     def __init__(self):
         super().__init__()
         self.setFrameShape(QFrame.StyledPanel)     
         self.create()  
         
     def create(self):
-        self.mainLayout =  QVBoxLayout(self)
         self.mainWidgetLayout =  QVBoxLayout(self)
         self.setLayout(self.mainWidgetLayout) 
         
@@ -264,6 +280,7 @@ class Control(Widgets):
         self.joystick.setPosition(rotate, gaz)
         self.rotSlider.setValue(rotate)
         self.gazSlider.setValue(gaz)
+        self.send.emit(rotate,  gaz)
     def joystickMoved(self, x, y):
         global gaz
         global rotate
@@ -432,6 +449,6 @@ class Collisions(Widgets):
 
 
 if __name__ == "__main__":
-    app = QApplication([])
+    app1 = QApplication([])
     window = Window()
-    sys.exit(app.exec_())
+    sys.exit(app1.exec_())
