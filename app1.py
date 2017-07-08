@@ -80,7 +80,7 @@ class Content(QWidget):
             self.mainBox.addWidget(self.controlSplitter[i])
         
         #creating widgets
-        self.widgets = [ Control(), Camera(), Locator_atop() ]
+        self.widgets = [ Control(), Locator_aside(), Locator_atop() ]
         
         self.widgets[0].changeWindSignal[int, int].connect(self.changeWindows)
         
@@ -338,42 +338,69 @@ class Map(Widgets):
         self.cameraHBox.addLayout(self.joy2Layout)
         self.mainWidgetLayout.addLayout(self.cameraHBox)         
 
-class Locator_aside(Widgets):
+class Locator_aside(Widgets):  
+    points = ( (-100, -100), (-180, -80), (-120, -70), (-220, -60) )
     def __init__(self):
         super().__init__()
-        self.createControl()
-    def createControl(self):
-    
-        self.cameraHBox = QHBoxLayout()
-        self.joy1Layout =  QVBoxLayout()
-        self.joy1Label =  QFormLayout()
-        self.joy1Line =  QLineEdit('0')
-        self.joy1Line.setMaximumWidth(50)
-        self.joy1Label.addRow("Horizontal angle",  self.joy1Line)
-        self.joystick1 =  QDial()
-        self.joystick1.setMinimumHeight(200)
-        self.joystick1.setMinimumWidth(200)
-        self.joy1Layout.addStretch(1)
-        self.joy1Layout.addLayout(self.joy1Label)
-        self.joy1Layout.addWidget(self.joystick1)
-        self.joy1Layout.addStretch(1)
-    
-        self.joy2Layout =  QVBoxLayout()
-        self.joy2Label =  QFormLayout()
-        self.joy2Line =  QLineEdit('0')
-        self.joy2Line.setMaximumWidth(50)
-        self.joy2Label.addRow("Vertical angle",  self.joy2Line)
-        self.joystick2 =  QDial()
-        self.joystick2.setMinimumHeight(200)
-        self.joystick2.setMinimumWidth(200)
-        self.joy2Layout.addStretch(1)
-        self.joy2Layout.addLayout(self.joy2Label)
-        self.joy2Layout.addWidget(self.joystick2)
-        self.joy2Layout.addStretch(1)
-    
-        self.cameraHBox.addLayout(self.joy1Layout)
-        self.cameraHBox.addLayout(self.joy2Layout)
-        self.mainWidgetLayout.addLayout(self.cameraHBox)         
+        self.setMinimumWidth(400)
+        self.iconLocator = QPixmap('locator-aside.png')
+        #self.points = self.points[::-1]
+    def paintEvent(self, event):
+        geom  = self.geometry()
+        self.zero = (geom.width()-10, int(geom.height()*0.9))
+        
+        self.p = QPainter(self)
+        self.p.setRenderHint(QPainter.Antialiasing)   #smoothing for lines
+        self.p.setRenderHint(QPainter.SmoothPixmapTransform)  #smoothing for Pixmap
+        self.p.setPen(Qt.blue)        
+        
+        #drawing grid & scale numbers
+        self.p.translate(*self.zero)
+        step = 20
+        self.p.setOpacity(0.2)
+        for i in range(-self.zero[0]//step, 2):
+            self.p.drawLine(i*step, 0, i*step, -geom.height())
+        for i in range(-self.zero[1]//step, 0):
+            self.p.drawLine(0, i*step,  -geom.width(), i*step)
+            
+        self.p.setOpacity(0.7)
+        
+        
+        for i in range(-self.zero[0]//(step), 2, 2):
+            self.p.drawText(i*step-10, 10, str(i*step))
+            
+        for i in range(0, -self.zero[1]//step, -2):
+            self.p.drawText(-self.zero[0]+10, i*step+5, str(i*step))
+        #-----------------------------------------------------------
+        
+        #drawing locator
+        self.p.setOpacity(1)
+        self.p.drawLine(-self.zero[0], 0, 0, 0)   #hor Line
+        
+        self.p.translate(0, -30)
+        self.p.rotate(50)
+        self.p.drawLine(0, 0, -geom.width()*2, 0) #rotatable line
+        self.p.drawPixmap(-30, -10, self.iconLocator) #locator icon
+        #-----------------------------------------------------------
+        
+        #drawing barrier map
+        self.p.rotate(-50)
+        self.p.translate(0, 30)
+        self.p.setBrush(Qt.blue)
+        self.p.setOpacity(0.2)
+        
+        
+        self.polygon = QPolygonF()
+        self.polygon.append(QPointF(self.points[0][1], 0))
+        self.polygon.append(QPointF(-self.zero[0], 0))
+        self.polygon.append(QPointF(-self.zero[0], -geom.height()*0.9))
+        self.polygon.append(QPointF(self.points[-1][1], -self.zero[1]))
+        
+        for u in self.points:
+            self.p.drawEllipse(u[0]-1, u[1]-1, 2, 2)
+            self.polygon.append(QPointF(*u))
+            
+        self.p.drawPolygon(self.polygon)        
 class Locator_atop(Widgets):
     points = ( (-100, -100), (-80, -180), (-70, -120), (-60, -220) )
     def __init__(self):
@@ -391,12 +418,15 @@ class Locator_atop(Widgets):
         #drawing grid & scale numbers
         step = 20
         self.p.setOpacity(0.2)
+        
         for i in range(geom.width()//step):
-            self.p.drawLine(i*step, 0, i*step, geom.height())
+            self.p.drawLine(i*step, 0, i*step, geom.height()*0.9)
         for i in range(geom.height()//step):
             self.p.drawLine(0, i*step,  geom.width(), i*step) 
+            
         self.p.setOpacity(0.7)
         self.p.translate(geom.width()//2, geom.height()*0.9)
+        
         for i in range(-geom.width()//(step*2), geom.width()//(step*2), 2):
             self.p.drawText(i*step-10, 10, str(i*step))
         for i in range(0, -geom.height()//step, -2):
@@ -408,7 +438,7 @@ class Locator_atop(Widgets):
         self.p.drawLine(-geom.width()//2, 0, geom.width(), 0)   #hor Line
         
         self.p.rotate(30)
-        self.p.drawLine(0, 0, 0, -geom.height()*0.9) #rotatable line
+        self.p.drawLine(0, 0, 0, -geom.height()) #rotatable line
         self.p.drawPixmap(-20, -27, self.iconLocator) #locator icon
         #-----------------------------------------------------------
         
@@ -423,6 +453,7 @@ class Locator_atop(Widgets):
         self.polygon.append(QPointF(geom.width()//2, -geom.height()*0.9))
         self.polygon.append(QPointF(geom.width()//2, self.points[-1][1]))
         for u in self.points:
+            self.p.drawEllipse(u[0]-1, u[1]-1, 2, 2)
             self.polygon.append(QPointF(*u))
             
         self.p.drawPolygon(self.polygon)
