@@ -80,9 +80,9 @@ class Content(QWidget):
             self.mainBox.addWidget(self.controlSplitter[i])
         
         #creating widgets
-        self.widgets = [ Control(), Locator_aside(), Locator_atop() ]
+        self.widgets = [Collisions(), Locator_aside(), Locator_atop() ]
         
-        self.widgets[0].changeWindSignal[int, int].connect(self.changeWindows)
+        #self.widgets[0].changeWindSignal[int, int].connect(self.changeWindows)
         
         #adding widgets to the layout
         for i in range(self.numberOfWidgets):
@@ -118,6 +118,8 @@ class Widgets(QFrame):
         super().__init__()
         self.setFrameShape(QFrame.StyledPanel)     
         self.create()  
+        self.setMinimumHeight(300)
+        self.setMinimumWidth(400)
         
     def create(self):
         self.mainWidgetLayout =  QVBoxLayout(self)
@@ -459,42 +461,36 @@ class Locator_atop(Widgets):
         self.p.drawPolygon(self.polygon)
 
 class Collisions(Widgets):
+    coll = [False, False, False, False]
     def __init__(self):
         super().__init__()
-        self.createControl()
-    def createControl(self):
-    
-        self.cameraHBox = QHBoxLayout()
-        self.joy1Layout =  QVBoxLayout()
-        self.joy1Label =  QFormLayout()
-        self.joy1Line =  QLineEdit('0')
-        self.joy1Line.setMaximumWidth(50)
-        self.joy1Label.addRow("Horizontal angle",  self.joy1Line)
-        self.joystick1 =  QDial()
-        self.joystick1.setMinimumHeight(200)
-        self.joystick1.setMinimumWidth(200)
-        self.joy1Layout.addStretch(1)
-        self.joy1Layout.addLayout(self.joy1Label)
-        self.joy1Layout.addWidget(self.joystick1)
-        self.joy1Layout.addStretch(1)
-    
-        self.joy2Layout =  QVBoxLayout()
-        self.joy2Label =  QFormLayout()
-        self.joy2Line =  QLineEdit('0')
-        self.joy2Line.setMaximumWidth(50)
-        self.joy2Label.addRow("Vertical angle",  self.joy2Line)
-        self.joystick2 =  QDial()
-        self.joystick2.setMinimumHeight(200)
-        self.joystick2.setMinimumWidth(200)
-        self.joy2Layout.addStretch(1)
-        self.joy2Layout.addLayout(self.joy2Label)
-        self.joy2Layout.addWidget(self.joystick2)
-        self.joy2Layout.addStretch(1)
-    
-        self.cameraHBox.addLayout(self.joy1Layout)
-        self.cameraHBox.addLayout(self.joy2Layout)
-        self.mainWidgetLayout.addLayout(self.cameraHBox)         
-
+        self.img = QPixmap('car.png')
+        self.img = self.img.scaled(200, 94)
+        self.imgSize = (200, 94)
+        self.bordImg = QPixmap('border.png')
+        self.bordImg = self.bordImg.scaled(120, 50)
+        self.bordSize = (120, 50)
+        self.bordPos = ( (-self.bordSize[0]//2, -self.imgSize[1]//2-55),
+                         (-self.bordSize[0]//2, -self.imgSize[1]//2+100),
+                         (-self.bordSize[0]//2, -self.imgSize[1]//2-100),
+                         (-self.bordSize[0]//2, self.imgSize[1]//2+50) )
+        self.coll[2] = True
+    def paintEvent(self, event):
+        geom = self.geometry()
+        p = QPainter(self)
+        p.setRenderHint(QPainter.Antialiasing)   #smoothing for lines
+        p.setRenderHint(QPainter.SmoothPixmapTransform)  #smoothing for Pixmap        
+        p.setPen(Qt.blue)
+        p.setBrush(Qt.blue)
+        p.translate(geom.width()//2, geom.height()//2)
+        
+        p.drawPixmap(-self.imgSize[0]//2, -self.imgSize[1]//2, self.img)
+        p.setOpacity(0.7)
+        
+        for i in range(4):
+            if i == 2: p.rotate(90)
+            if self.coll[i]==True:
+                p.drawPixmap(*self.bordPos[i], self.bordImg)
 
 if __name__ == "__main__":
     app1 = QApplication([])
