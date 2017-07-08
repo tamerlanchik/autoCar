@@ -1,10 +1,11 @@
 from PyQt5.QtWidgets import (QMainWindow, QDesktopWidget,  QWidget, QLCDNumber, QSlider,
     QVBoxLayout, QApplication, QLabel, QHBoxLayout, QComboBox, QSplitter,  QAction, QFormLayout,  QInputDialog, QMessageBox, QPushButton,  QGroupBox,  QCheckBox,  QLineEdit,  QFrame,  QDial)
-from PyQt5.QtGui import QIcon, QColor,  QPalette,  QImage,  QPixmap
+from PyQt5.QtGui import QIcon, QColor,  QPalette,  QImage,  QPixmap, QPainter, QPolygonF
 import os
-from PyQt5.QtCore import Qt,  QRect,  pyqtSignal,  QSignalMapper, QSize
+from PyQt5.QtCore import Qt,  QRect,  pyqtSignal,  QSignalMapper, QSize, QPointF
 import sys
 import time
+import random
 from joystick import Joy
 #from communicator import Communicator
 
@@ -59,10 +60,10 @@ class Window (QMainWindow):
         y = 10
         self.move(x,  y)        
 class Content(QWidget):
-    numberOfWidgets = 6
+    numberOfWidgets = 3
     res =  pyqtSignal(int, int)
     send =  pyqtSignal(int, int)
-    windows =  [True] * numberOfWidgets
+    windows =  [True] * 3
     windows[0]=True
     def __init__(self,  parent, screen):
         super().__init__(parent)
@@ -79,7 +80,7 @@ class Content(QWidget):
             self.mainBox.addWidget(self.controlSplitter[i])
         
         #creating widgets
-        self.widgets = [ Control(), Camera(), Map(), Locator_aside(), Locator_atop(),  Collisions() ]
+        self.widgets = [ Control(), Camera(), Locator_atop() ]
         
         self.widgets[0].changeWindSignal[int, int].connect(self.changeWindows)
         
@@ -374,41 +375,48 @@ class Locator_aside(Widgets):
         self.cameraHBox.addLayout(self.joy2Layout)
         self.mainWidgetLayout.addLayout(self.cameraHBox)         
 class Locator_atop(Widgets):
+    #points = ((-80, -80), (-80, -90), (-100, -100), (-110, -50), (-150, -60))
+    points = ( (-100, -100), (-80, -180), (-70, -120), (-60, -220) )
     def __init__(self):
         super().__init__()
-        self.createControl()
-    def createControl(self):
-    
-        self.cameraHBox = QHBoxLayout()
-        self.joy1Layout =  QVBoxLayout()
-        self.joy1Label =  QFormLayout()
-        self.joy1Line =  QLineEdit('0')
-        self.joy1Line.setMaximumWidth(50)
-        self.joy1Label.addRow("Horizontal angle",  self.joy1Line)
-        self.joystick1 =  QDial()
-        self.joystick1.setMinimumHeight(200)
-        self.joystick1.setMinimumWidth(200)
-        self.joy1Layout.addStretch(1)
-        self.joy1Layout.addLayout(self.joy1Label)
-        self.joy1Layout.addWidget(self.joystick1)
-        self.joy1Layout.addStretch(1)
-    
-        self.joy2Layout =  QVBoxLayout()
-        self.joy2Label =  QFormLayout()
-        self.joy2Line =  QLineEdit('0')
-        self.joy2Line.setMaximumWidth(50)
-        self.joy2Label.addRow("Vertical angle",  self.joy2Line)
-        self.joystick2 =  QDial()
-        self.joystick2.setMinimumHeight(200)
-        self.joystick2.setMinimumWidth(200)
-        self.joy2Layout.addStretch(1)
-        self.joy2Layout.addLayout(self.joy2Label)
-        self.joy2Layout.addWidget(self.joystick2)
-        self.joy2Layout.addStretch(1)
-    
-        self.cameraHBox.addLayout(self.joy1Layout)
-        self.cameraHBox.addLayout(self.joy2Layout)
-        self.mainWidgetLayout.addLayout(self.cameraHBox)         
+        self.setMinimumWidth(400)
+        self.iconLocator = QPixmap('locator.png')
+        #self.createControl()
+        self.points = self.points[::-1]
+    def paintEvent(self, event):
+        geom  = self.geometry()
+        self.p = QPainter(self)
+        self.p.setRenderHint(QPainter.Antialiasing)
+        self.p.setRenderHint(QPainter.SmoothPixmapTransform)
+        self.p.setPen(Qt.blue)        
+        
+        step = 20
+        self.p.setOpacity(0.2)
+        for i in range(geom.width()//step):
+            self.p.drawLine(i*step, 0, i*step, geom.height())
+        for i in range(geom.height()//step):
+            self.p.drawLine(0, i*step,  geom.width(), i*step)        
+        
+        self.p.setOpacity(1)
+        self.p.drawLine(0, geom.height()*0.9, geom.width(), geom.height()*0.9)   
+        
+        self.p.translate(geom.width()//2, geom.height()*0.9)
+        self.p.rotate(30)
+        self.p.drawLine(0, 0, 0, -geom.height()*0.9)
+        self.p.drawPixmap(-20, -27, self.iconLocator)
+        
+        self.p.rotate(-30)
+        self.p.setBrush(Qt.blue)
+        self.p.setOpacity(0.2)
+        self.polygon = QPolygonF()
+        self.polygon.append(QPointF(-geom.width()//2, self.points[-1][1]))
+        self.polygon.append(QPointF(-geom.width()//2, -geom.height()*0.9))
+        self.polygon.append(QPointF(geom.width()//2, -geom.height()*0.9))
+        self.polygon.append(QPointF(geom.width()//2, self.points[-1][1]))
+        for u in self.points:
+            self.polygon.append(QPointF(*u))
+            
+        self.p.drawPolygon(self.polygon)
 
 class Collisions(Widgets):
     def __init__(self):
