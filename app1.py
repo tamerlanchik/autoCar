@@ -3,13 +3,12 @@ from PyQt5.QtWidgets import (QMainWindow, QDesktopWidget,  QWidget, QLCDNumber, 
 from PyQt5.QtGui import QIcon, QColor,  QPalette,  QImage,  QPixmap, QPainter, QPolygonF
 import os
 from PyQt5.QtCore import Qt,  QRect,  pyqtSignal,  QSignalMapper, QSize, QPointF
+from PyQt5.QtMultimedia import QSound
 import sys
 import time
 import random
 from joystick import Joy
-#from communicator import Communicator
 
-from multiprocessing import Process
 portList=['COM'+str(i) for i in range(1, 4+1)]
 serialSpeedCases=['9600', '14400', '38400', '57600', '115200']
 rotate = 0
@@ -21,7 +20,6 @@ class Window (QMainWindow):
         super().__init__()
         self.statusbar =  self.statusBar()
         self.cont =  Content(self, QDesktopWidget().screenGeometry())
-        self.cont.res[int, int].connect(self.resiz)
         self.cont.send[int,  int].connect(self.sendData)
         #self.statusBar().showMessage("qqqqqqqqqqq")
         self.setCentralWidget(self.cont)
@@ -34,16 +32,9 @@ class Window (QMainWindow):
         #self.comm =  Communicator()
         
         self.show()
-        '''app1 = QApplication([])
-        sys.exit(app1.exec_())'''
     def sendData(self,  a,  b):
         self.sendo.emit(a,  b)
         self.statusBar().showMessage(str(a))
-    def resiz(self, a, b):
-        #self.resize(a, b)
-        self.setMaximumWidth(a)
-        self.statusBar().showMessage(str((a, b, self.geometry().width())))
-        self.update()
     def setBackground(self):
         pal =  QPalette()
         pal.setColor(QPalette.Background,  Qt.white)
@@ -98,20 +89,7 @@ class Content(QWidget):
         self.send.emit(a,  b)
     def sendMessage(self,  m):
         self.msg.emit('Hi')
-    def changeWindows(self,  i, state):
-        self.windows[i+1] =   bool(state)
-        
-        if self.windows[i+1] == False:
-            self.widgets[i+1].hide()
-            self.res.emit(400,  400)
-            self.setMaximumWidth(400)
-            
-        elif self.windows[i+1] == True:      
-            self.widgets[i+1].show()
-            self.res.emit(890, 400)
-            self.setMaximumWidth(890)
-            
-        self.update()
+    
 class Widgets(QFrame):
     send =  pyqtSignal(int,  int)
     def __init__(self):
@@ -119,7 +97,7 @@ class Widgets(QFrame):
         self.setFrameShape(QFrame.StyledPanel)     
         self.create()  
         self.setMinimumHeight(300)
-        self.setMinimumWidth(400)
+        self.setMinimumWidth(450)
         
     def create(self):
         self.mainWidgetLayout =  QVBoxLayout(self)
@@ -344,52 +322,69 @@ class Locator_aside(Widgets):
     points = ( (-100, -100), (-180, -80), (-120, -70), (-220, -60) )
     def __init__(self):
         super().__init__()
+        self.style = open('locator.css', 'r')
+        self.styleSheet = self.style.read()
+        self.style.close()
+        self.setStyleSheet(self.styleSheet)
+        
         self.setMinimumWidth(400)
+        self.setMinimumHeight(400)
         self.iconLocator = QPixmap('locator-aside.png')
-        #self.points = self.points[::-1]
+        
+        self.contr = QHBoxLayout()
+        self.f = QLabel()
+        self.mainWidgetLayout.addStretch(2)
+        self.mainWidgetLayout.addLayout(self.contr)
+        self.rescanBut = QPushButton('Rescan')
+        self.rescanBut.setMinimumSize(60, 20)
+        self.rescanBut.toggled.connect(self.rescan)
+        self.scanSlider = QSlider(Qt.Horizontal)
+        self.contr.addWidget(self.rescanBut)
+        self.contr.addWidget(self.scanSlider)
+    def rescan(self): 
+        print('sss')
     def paintEvent(self, event):
         geom  = self.geometry()
         self.zero = (geom.width()-10, int(geom.height()*0.9))
-        
-        self.p = QPainter(self)
-        self.p.setRenderHint(QPainter.Antialiasing)   #smoothing for lines
-        self.p.setRenderHint(QPainter.SmoothPixmapTransform)  #smoothing for Pixmap
-        self.p.setPen(Qt.blue)        
+        p = QPainter(self)
+        p.setRenderHint(QPainter.Antialiasing)   #smoothing for lines
+        p.setRenderHint(QPainter.SmoothPixmapTransform)  #smoothing for Pixmap
+        p.setPen(Qt.blue)        
         
         #drawing grid & scale numbers
-        self.p.translate(*self.zero)
+        p.translate(*self.zero)
         step = 20
-        self.p.setOpacity(0.2)
+        p.setOpacity(0.2)
         for i in range(-self.zero[0]//step, 2):
-            self.p.drawLine(i*step, 0, i*step, -geom.height())
+            p.drawLine(i*step, 0, i*step, -geom.height())
         for i in range(-self.zero[1]//step, 0):
-            self.p.drawLine(0, i*step,  -geom.width(), i*step)
+            p.drawLine(0, i*step,  -geom.width(), i*step)
             
-        self.p.setOpacity(0.7)
+        p.setOpacity(0.7)
         
         
         for i in range(-self.zero[0]//(step), 2, 2):
-            self.p.drawText(i*step-10, 10, str(i*step))
+            p.drawText(i*step-10, 10, str(i*step))
             
         for i in range(0, -self.zero[1]//step, -2):
-            self.p.drawText(-self.zero[0]+10, i*step+5, str(i*step))
+            p.drawText(-self.zero[0]+10, i*step+5, str(i*step))
         #-----------------------------------------------------------
         
         #drawing locator
-        self.p.setOpacity(1)
-        self.p.drawLine(-self.zero[0], 0, 0, 0)   #hor Line
+        p.setOpacity(1)
+        p.drawLine(-self.zero[0], 0, 0, 0)   #hor Line
         
-        self.p.translate(0, -30)
-        self.p.rotate(50)
-        self.p.drawLine(0, 0, -geom.width()*2, 0) #rotatable line
-        self.p.drawPixmap(-30, -10, self.iconLocator) #locator icon
+        p.translate(0, -30)
+        p.rotate(50)
+        p.drawLine(0, 0, -geom.width()*2, 0) #rotatable line
+        p.drawPixmap(-30, -10, self.iconLocator) #locator icon
         #-----------------------------------------------------------
         
         #drawing barrier map
-        self.p.rotate(-50)
-        self.p.translate(0, 30)
-        self.p.setBrush(Qt.blue)
-        self.p.setOpacity(0.2)
+        p.rotate(-50)
+        p.translate(0, 30)
+        p.setBrush(Qt.blue)
+        p.setOpacity(0.2)
         
         
         self.polygon = QPolygonF()
@@ -399,71 +394,92 @@ class Locator_aside(Widgets):
         self.polygon.append(QPointF(self.points[-1][1], -self.zero[1]))
         
         for u in self.points:
-            self.p.drawEllipse(u[0]-1, u[1]-1, 2, 2)
+            p.drawEllipse(u[0]-1, u[1]-1, 2, 2)
             self.polygon.append(QPointF(*u))
             
-        self.p.drawPolygon(self.polygon)        
+        p.drawPolygon(self.polygon)        
 class Locator_atop(Widgets):
     points = ( (-100, -100), (-80, -180), (-70, -120), (-60, -220) )
     def __init__(self):
         super().__init__()
+        self.style = open('locator.css', 'r')
+        self.styleSheet = self.style.read()
+        self.style.close()
+        self.setStyleSheet(self.styleSheet)        
         self.setMinimumWidth(400)
         self.iconLocator = QPixmap('locator-atop.png')
         self.points = self.points[::-1]
+        self.contr = QHBoxLayout()
+        self.f = QLabel()
+        self.mainWidgetLayout.addStretch(2)
+        self.mainWidgetLayout.addLayout(self.contr)
+        self.rescanBut = QPushButton('Rescan')
+        self.rescanBut.setMinimumSize(60, 20)
+        self.rescanBut.toggled.connect(self.rescan)
+        self.scanSlider = QSlider(Qt.Horizontal)
+        self.contr.addWidget(self.rescanBut)
+        self.contr.addWidget(self.scanSlider) 
+    def rescan(self):
+        print("Rescan")
     def paintEvent(self, event):
-        geom  = self.geometry()
-        self.p = QPainter(self)
-        self.p.setRenderHint(QPainter.Antialiasing)   #smoothing for lines
-        self.p.setRenderHint(QPainter.SmoothPixmapTransform)  #smoothing for Pixmap
-        self.p.setPen(Qt.blue)        
-        
-        #drawing grid & scale numbers
-        step = 20
-        self.p.setOpacity(0.2)
-        
-        for i in range(geom.width()//step):
-            self.p.drawLine(i*step, 0, i*step, geom.height()*0.9)
-        for i in range(geom.height()//step):
-            self.p.drawLine(0, i*step,  geom.width(), i*step) 
+        try:
+            geom  = self.geometry()
+            p = QPainter(self)
+            p.setRenderHint(QPainter.Antialiasing)   #smoothing for lines
+            p.setRenderHint(QPainter.SmoothPixmapTransform)  #smoothing for Pixmap
+            p.setPen(Qt.blue)     
             
-        self.p.setOpacity(0.7)
-        self.p.translate(geom.width()//2, geom.height()*0.9)
-        
-        for i in range(-geom.width()//(step*2), geom.width()//(step*2), 2):
-            self.p.drawText(i*step-10, 10, str(i*step))
-        for i in range(0, -geom.height()//step, -2):
-            self.p.drawText(-geom.width()//2, i*step+5, str(i*step))        
-        #-----------------------------------------------------------
-        
-        #drawing locator
-        self.p.setOpacity(1)
-        self.p.drawLine(-geom.width()//2, 0, geom.width(), 0)   #hor Line
-        
-        self.p.rotate(30)
-        self.p.drawLine(0, 0, 0, -geom.height()) #rotatable line
-        self.p.drawPixmap(-20, -27, self.iconLocator) #locator icon
-        #-----------------------------------------------------------
-        
-        #drawing barrier map
-        self.p.rotate(-30)
-        self.p.setBrush(Qt.blue)
-        self.p.setOpacity(0.2)
-        
-        self.polygon = QPolygonF()
-        self.polygon.append(QPointF(-geom.width()//2, self.points[-1][1]))
-        self.polygon.append(QPointF(-geom.width()//2, -geom.height()*0.9))
-        self.polygon.append(QPointF(geom.width()//2, -geom.height()*0.9))
-        self.polygon.append(QPointF(geom.width()//2, self.points[-1][1]))
-        for u in self.points:
-            self.p.drawEllipse(u[0]-1, u[1]-1, 2, 2)
-            self.polygon.append(QPointF(*u))
+            #drawing grid & scale numbers
+            step = 20
+            p.setOpacity(0.2)
             
-        self.p.drawPolygon(self.polygon)
+            for i in range(geom.width()//step):
+                p.drawLine(i*step, 0, i*step, geom.height()*0.9)
+            for i in range(geom.height()//step):
+                p.drawLine(0, i*step,  geom.width(), i*step) 
+                
+            p.setOpacity(0.7)
+            p.translate(geom.width()//2, geom.height()*0.9)
+            p.drawLine(0, 0, 200, 200)
+            for i in range(-geom.width()//(step*2), geom.width()//(step*2), 2):
+                p.drawText(i*step-10, 10, str(i*step))
+            for i in range(0, -geom.height()//step, -2):
+                p.drawText(-geom.width()//2, i*step+5, str(i*step))    
+            #-----------------------------------------------------------
+            
+            #drawing locator
+            p.setOpacity(1)
+            p.drawLine(-geom.width()//2, 0, geom.width(), 0)   #hor Line
+            
+            p.rotate(30)
+            p.drawLine(0, 0, 0, -geom.height()) #rotatable line
+            p.drawPixmap(-20, -27, self.iconLocator) #locator icon
+            #-----------------------------------------------------------
+            
+            #drawing barrier map
+            p.rotate(-30)
+            p.setBrush(Qt.blue)
+            p.setOpacity(0.2)
+            
+            self.polygon = QPolygonF()
+            self.polygon.append(QPointF(-geom.width()//2, self.points[-1][1]))
+            self.polygon.append(QPointF(-geom.width()//2, -geom.height()*0.9))
+            self.polygon.append(QPointF(geom.width()//2, -geom.height()*0.9))
+            self.polygon.append(QPointF(geom.width()//2, self.points[-1][1]))
+            for u in self.points:
+                p.drawEllipse(u[0]-1, u[1]-1, 2, 2)
+                self.polygon.append(QPointF(*u))
+                
+            p.drawPolygon(self.polygon)
+        except:
+            print("Error")
 
 class Collisions(Widgets):
     coll = [False, False, False, False]
     def __init__(self):
         super().__init__()
+        self.setMinimumWidth(300)
+        self.setMinimumHeight(200)
         self.img = QPixmap('car.png')
         self.img = self.img.scaled(200, 94)
         self.imgSize = (200, 94)
@@ -474,7 +490,16 @@ class Collisions(Widgets):
                          (-self.bordSize[0]//2, -self.imgSize[1]//2+100),
                          (-self.bordSize[0]//2, -self.imgSize[1]//2-100),
                          (-self.bordSize[0]//2, self.imgSize[1]//2+50) )
-        self.coll[2] = True
+        self.coll = [True]*4
+        self.alarm = QSound('frog.wav')
+        self.contr = QHBoxLayout()
+        self.f = QLabel()
+        self.mainWidgetLayout.addStretch(2)
+        self.mainWidgetLayout.addLayout(self.contr)
+        self.rescanBut = QPushButton('Rescan')
+        self.scanSlider = QSlider(Qt.Horizontal)
+        self.contr.addWidget(self.rescanBut)
+        self.contr.addWidget(self.scanSlider)        
     def paintEvent(self, event):
         geom = self.geometry()
         p = QPainter(self)
@@ -491,8 +516,13 @@ class Collisions(Widgets):
             if i == 2: p.rotate(90)
             if self.coll[i]==True:
                 p.drawPixmap(*self.bordPos[i], self.bordImg)
-
+    def collisionFound(self, data):
+        for i in range(4):
+            if data[i] == True and self.coll[i]==False:
+                self.alarm = QSound('frog.wav')
+            self.coll[i] = data[i]
+        self.update()
 if __name__ == "__main__":
-    app1 = QApplication([])
+    app = QApplication([])
     window = Window()
-    sys.exit(app1.exec_())
+    sys.exit(app.exec_())
