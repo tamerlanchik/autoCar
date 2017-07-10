@@ -1,14 +1,14 @@
 from PyQt5.QtWidgets import (QMainWindow, QDesktopWidget,  QWidget, QLCDNumber, QSlider,
     QVBoxLayout, QApplication, QLabel, QHBoxLayout, QComboBox, QSplitter,  QAction, QFormLayout,  QInputDialog, QMessageBox, QPushButton,  QGroupBox,  QCheckBox,  QLineEdit,  QFrame,  QDial)
-from PyQt5.QtGui import QIcon, QColor,  QPalette,  QImage,  QPixmap
+from PyQt5.QtGui import QIcon, QColor,  QPalette,  QImage,  QPixmap, QPainter, QPolygonF
 import os
-from PyQt5.QtCore import Qt,  QRect,  pyqtSignal,  QSignalMapper, QSize
+from PyQt5.QtCore import Qt,  QRect,  pyqtSignal,  QSignalMapper, QSize, QPointF
+from PyQt5.QtMultimedia import QSound
 import sys
 import time
+import random
 from joystick import Joy
-#from communicator import Communicator
 
-from multiprocessing import Process
 portList=['COM'+str(i) for i in range(1, 4+1)]
 serialSpeedCases=['9600', '14400', '38400', '57600', '115200']
 rotate = 0
@@ -20,7 +20,6 @@ class Window (QMainWindow):
         super().__init__()
         self.statusbar =  self.statusBar()
         self.cont =  Content(self, QDesktopWidget().screenGeometry())
-        self.cont.res[int, int].connect(self.resiz)
         self.cont.send[int,  int].connect(self.sendData)
         #self.statusBar().showMessage("qqqqqqqqqqq")
         self.setCentralWidget(self.cont)
@@ -33,16 +32,9 @@ class Window (QMainWindow):
         #self.comm =  Communicator()
         
         self.show()
-        '''app1 = QApplication([])
-        sys.exit(app1.exec_())'''
     def sendData(self,  a,  b):
         self.sendo.emit(a,  b)
         self.statusBar().showMessage(str(a))
-    def resiz(self, a, b):
-        #self.resize(a, b)
-        self.setMaximumWidth(a)
-        self.statusBar().showMessage(str((a, b, self.geometry().width())))
-        self.update()
     def setBackground(self):
         pal =  QPalette()
         pal.setColor(QPalette.Background,  Qt.white)
@@ -59,10 +51,10 @@ class Window (QMainWindow):
         y = 10
         self.move(x,  y)        
 class Content(QWidget):
-    numberOfWidgets = 6
+    numberOfWidgets = 3
     res =  pyqtSignal(int, int)
     send =  pyqtSignal(int, int)
-    windows =  [True] * numberOfWidgets
+    windows =  [True] * 3
     windows[0]=True
     def __init__(self,  parent, screen):
         super().__init__(parent)
@@ -79,9 +71,9 @@ class Content(QWidget):
             self.mainBox.addWidget(self.controlSplitter[i])
         
         #creating widgets
-        self.widgets = [ Control(), Camera(), Map(), Locator_aside(), Locator_atop(),  Collisions() ]
+        self.widgets = [Collisions(), Locator_aside(), Locator_atop() ]
         
-        self.widgets[0].changeWindSignal[int, int].connect(self.changeWindows)
+        #self.widgets[0].changeWindSignal[int, int].connect(self.changeWindows)
         
         #adding widgets to the layout
         for i in range(self.numberOfWidgets):
@@ -97,26 +89,15 @@ class Content(QWidget):
         self.send.emit(a,  b)
     def sendMessage(self,  m):
         self.msg.emit('Hi')
-    def changeWindows(self,  i, state):
-        self.windows[i+1] =   bool(state)
-        
-        if self.windows[i+1] == False:
-            self.widgets[i+1].hide()
-            self.res.emit(400,  400)
-            self.setMaximumWidth(400)
-            
-        elif self.windows[i+1] == True:      
-            self.widgets[i+1].show()
-            self.res.emit(890, 400)
-            self.setMaximumWidth(890)
-            
-        self.update()
+    
 class Widgets(QFrame):
     send =  pyqtSignal(int,  int)
     def __init__(self):
         super().__init__()
         self.setFrameShape(QFrame.StyledPanel)     
         self.create()  
+        self.setMinimumHeight(300)
+        self.setMinimumWidth(450)
         
     def create(self):
         self.mainWidgetLayout =  QVBoxLayout(self)
@@ -337,118 +318,211 @@ class Map(Widgets):
         self.cameraHBox.addLayout(self.joy2Layout)
         self.mainWidgetLayout.addLayout(self.cameraHBox)         
 
-class Locator_aside(Widgets):
+class Locator_aside(Widgets):  
+    points = ( (-100, -100), (-180, -80), (-120, -70), (-220, -60) )
     def __init__(self):
         super().__init__()
-        self.createControl()
-    def createControl(self):
-    
-        self.cameraHBox = QHBoxLayout()
-        self.joy1Layout =  QVBoxLayout()
-        self.joy1Label =  QFormLayout()
-        self.joy1Line =  QLineEdit('0')
-        self.joy1Line.setMaximumWidth(50)
-        self.joy1Label.addRow("Horizontal angle",  self.joy1Line)
-        self.joystick1 =  QDial()
-        self.joystick1.setMinimumHeight(200)
-        self.joystick1.setMinimumWidth(200)
-        self.joy1Layout.addStretch(1)
-        self.joy1Layout.addLayout(self.joy1Label)
-        self.joy1Layout.addWidget(self.joystick1)
-        self.joy1Layout.addStretch(1)
-    
-        self.joy2Layout =  QVBoxLayout()
-        self.joy2Label =  QFormLayout()
-        self.joy2Line =  QLineEdit('0')
-        self.joy2Line.setMaximumWidth(50)
-        self.joy2Label.addRow("Vertical angle",  self.joy2Line)
-        self.joystick2 =  QDial()
-        self.joystick2.setMinimumHeight(200)
-        self.joystick2.setMinimumWidth(200)
-        self.joy2Layout.addStretch(1)
-        self.joy2Layout.addLayout(self.joy2Label)
-        self.joy2Layout.addWidget(self.joystick2)
-        self.joy2Layout.addStretch(1)
-    
-        self.cameraHBox.addLayout(self.joy1Layout)
-        self.cameraHBox.addLayout(self.joy2Layout)
-        self.mainWidgetLayout.addLayout(self.cameraHBox)         
+        self.style = open('locator.css', 'r')
+        self.styleSheet = self.style.read()
+        self.style.close()
+        self.setStyleSheet(self.styleSheet)
+        
+        self.setMinimumWidth(400)
+        self.setMinimumHeight(400)
+        self.iconLocator = QPixmap('locator-aside.png')
+        
+        self.contr = QHBoxLayout()
+        self.f = QLabel()
+        self.mainWidgetLayout.addStretch(2)
+        self.mainWidgetLayout.addLayout(self.contr)
+        self.rescanBut = QPushButton('Rescan')
+        self.rescanBut.setMinimumSize(60, 20)
+        self.rescanBut.toggled.connect(self.rescan)
+        self.scanSlider = QSlider(Qt.Horizontal)
+        self.contr.addWidget(self.rescanBut)
+        self.contr.addWidget(self.scanSlider)
+    def rescan(self): 
+        print('sss')
+    def paintEvent(self, event):
+        geom  = self.geometry()
+        self.zero = (geom.width()-10, int(geom.height()*0.9))
+        p = QPainter(self)
+        p.setRenderHint(QPainter.Antialiasing)   #smoothing for lines
+        p.setRenderHint(QPainter.SmoothPixmapTransform)  #smoothing for Pixmap
+        p.setPen(Qt.blue)        
+        
+        #drawing grid & scale numbers
+        p.translate(*self.zero)
+        step = 20
+        p.setOpacity(0.2)
+        for i in range(-self.zero[0]//step, 2):
+            p.drawLine(i*step, 0, i*step, -geom.height())
+        for i in range(-self.zero[1]//step, 0):
+            p.drawLine(0, i*step,  -geom.width(), i*step)
+            
+        p.setOpacity(0.7)
+        
+        
+        for i in range(-self.zero[0]//(step), 2, 2):
+            p.drawText(i*step-10, 10, str(i*step))
+            
+        for i in range(0, -self.zero[1]//step, -2):
+            p.drawText(-self.zero[0]+10, i*step+5, str(i*step))
+        #-----------------------------------------------------------
+        
+        #drawing locator
+        p.setOpacity(1)
+        p.drawLine(-self.zero[0], 0, 0, 0)   #hor Line
+        
+        p.translate(0, -30)
+        p.rotate(50)
+        p.drawLine(0, 0, -geom.width()*2, 0) #rotatable line
+        p.drawPixmap(-30, -10, self.iconLocator) #locator icon
+        #-----------------------------------------------------------
+        
+        #drawing barrier map
+        p.rotate(-50)
+        p.translate(0, 30)
+        p.setBrush(Qt.blue)
+        p.setOpacity(0.2)
+        
+        
+        self.polygon = QPolygonF()
+        self.polygon.append(QPointF(self.points[0][1], 0))
+        self.polygon.append(QPointF(-self.zero[0], 0))
+        self.polygon.append(QPointF(-self.zero[0], -geom.height()*0.9))
+        self.polygon.append(QPointF(self.points[-1][1], -self.zero[1]))
+        
+        for u in self.points:
+            p.drawEllipse(u[0]-1, u[1]-1, 2, 2)
+            self.polygon.append(QPointF(*u))
+            
+        p.drawPolygon(self.polygon)        
 class Locator_atop(Widgets):
+    points = ( (-100, -100), (-80, -180), (-70, -120), (-60, -220) )
     def __init__(self):
         super().__init__()
-        self.createControl()
-    def createControl(self):
-    
-        self.cameraHBox = QHBoxLayout()
-        self.joy1Layout =  QVBoxLayout()
-        self.joy1Label =  QFormLayout()
-        self.joy1Line =  QLineEdit('0')
-        self.joy1Line.setMaximumWidth(50)
-        self.joy1Label.addRow("Horizontal angle",  self.joy1Line)
-        self.joystick1 =  QDial()
-        self.joystick1.setMinimumHeight(200)
-        self.joystick1.setMinimumWidth(200)
-        self.joy1Layout.addStretch(1)
-        self.joy1Layout.addLayout(self.joy1Label)
-        self.joy1Layout.addWidget(self.joystick1)
-        self.joy1Layout.addStretch(1)
-    
-        self.joy2Layout =  QVBoxLayout()
-        self.joy2Label =  QFormLayout()
-        self.joy2Line =  QLineEdit('0')
-        self.joy2Line.setMaximumWidth(50)
-        self.joy2Label.addRow("Vertical angle",  self.joy2Line)
-        self.joystick2 =  QDial()
-        self.joystick2.setMinimumHeight(200)
-        self.joystick2.setMinimumWidth(200)
-        self.joy2Layout.addStretch(1)
-        self.joy2Layout.addLayout(self.joy2Label)
-        self.joy2Layout.addWidget(self.joystick2)
-        self.joy2Layout.addStretch(1)
-    
-        self.cameraHBox.addLayout(self.joy1Layout)
-        self.cameraHBox.addLayout(self.joy2Layout)
-        self.mainWidgetLayout.addLayout(self.cameraHBox)         
+        self.style = open('locator.css', 'r')
+        self.styleSheet = self.style.read()
+        self.style.close()
+        self.setStyleSheet(self.styleSheet)        
+        self.setMinimumWidth(400)
+        self.iconLocator = QPixmap('locator-atop.png')
+        self.points = self.points[::-1]
+        self.contr = QHBoxLayout()
+        self.f = QLabel()
+        self.mainWidgetLayout.addStretch(2)
+        self.mainWidgetLayout.addLayout(self.contr)
+        self.rescanBut = QPushButton('Rescan')
+        self.rescanBut.setMinimumSize(60, 20)
+        self.rescanBut.toggled.connect(self.rescan)
+        self.scanSlider = QSlider(Qt.Horizontal)
+        self.contr.addWidget(self.rescanBut)
+        self.contr.addWidget(self.scanSlider) 
+    def rescan(self):
+        print("Rescan")
+    def paintEvent(self, event):
+        try:
+            geom  = self.geometry()
+            p = QPainter(self)
+            p.setRenderHint(QPainter.Antialiasing)   #smoothing for lines
+            p.setRenderHint(QPainter.SmoothPixmapTransform)  #smoothing for Pixmap
+            p.setPen(Qt.blue)     
+            
+            #drawing grid & scale numbers
+            step = 20
+            p.setOpacity(0.2)
+            
+            for i in range(geom.width()//step):
+                p.drawLine(i*step, 0, i*step, geom.height()*0.9)
+            for i in range(geom.height()//step):
+                p.drawLine(0, i*step,  geom.width(), i*step) 
+                
+            p.setOpacity(0.7)
+            p.translate(geom.width()//2, geom.height()*0.9)
+            p.drawLine(0, 0, 200, 200)
+            for i in range(-geom.width()//(step*2), geom.width()//(step*2), 2):
+                p.drawText(i*step-10, 10, str(i*step))
+            for i in range(0, -geom.height()//step, -2):
+                p.drawText(-geom.width()//2, i*step+5, str(i*step))    
+            #-----------------------------------------------------------
+            
+            #drawing locator
+            p.setOpacity(1)
+            p.drawLine(-geom.width()//2, 0, geom.width(), 0)   #hor Line
+            
+            p.rotate(30)
+            p.drawLine(0, 0, 0, -geom.height()) #rotatable line
+            p.drawPixmap(-20, -27, self.iconLocator) #locator icon
+            #-----------------------------------------------------------
+            
+            #drawing barrier map
+            p.rotate(-30)
+            p.setBrush(Qt.blue)
+            p.setOpacity(0.2)
+            
+            self.polygon = QPolygonF()
+            self.polygon.append(QPointF(-geom.width()//2, self.points[-1][1]))
+            self.polygon.append(QPointF(-geom.width()//2, -geom.height()*0.9))
+            self.polygon.append(QPointF(geom.width()//2, -geom.height()*0.9))
+            self.polygon.append(QPointF(geom.width()//2, self.points[-1][1]))
+            for u in self.points:
+                p.drawEllipse(u[0]-1, u[1]-1, 2, 2)
+                self.polygon.append(QPointF(*u))
+                
+            p.drawPolygon(self.polygon)
+        except:
+            print("Error")
 
 class Collisions(Widgets):
+    coll = [False, False, False, False]
     def __init__(self):
         super().__init__()
-        self.createControl()
-    def createControl(self):
-    
-        self.cameraHBox = QHBoxLayout()
-        self.joy1Layout =  QVBoxLayout()
-        self.joy1Label =  QFormLayout()
-        self.joy1Line =  QLineEdit('0')
-        self.joy1Line.setMaximumWidth(50)
-        self.joy1Label.addRow("Horizontal angle",  self.joy1Line)
-        self.joystick1 =  QDial()
-        self.joystick1.setMinimumHeight(200)
-        self.joystick1.setMinimumWidth(200)
-        self.joy1Layout.addStretch(1)
-        self.joy1Layout.addLayout(self.joy1Label)
-        self.joy1Layout.addWidget(self.joystick1)
-        self.joy1Layout.addStretch(1)
-    
-        self.joy2Layout =  QVBoxLayout()
-        self.joy2Label =  QFormLayout()
-        self.joy2Line =  QLineEdit('0')
-        self.joy2Line.setMaximumWidth(50)
-        self.joy2Label.addRow("Vertical angle",  self.joy2Line)
-        self.joystick2 =  QDial()
-        self.joystick2.setMinimumHeight(200)
-        self.joystick2.setMinimumWidth(200)
-        self.joy2Layout.addStretch(1)
-        self.joy2Layout.addLayout(self.joy2Label)
-        self.joy2Layout.addWidget(self.joystick2)
-        self.joy2Layout.addStretch(1)
-    
-        self.cameraHBox.addLayout(self.joy1Layout)
-        self.cameraHBox.addLayout(self.joy2Layout)
-        self.mainWidgetLayout.addLayout(self.cameraHBox)         
-
-
+        self.setMinimumWidth(300)
+        self.setMinimumHeight(200)
+        self.img = QPixmap('car.png')
+        self.img = self.img.scaled(200, 94)
+        self.imgSize = (200, 94)
+        self.bordImg = QPixmap('border.png')
+        self.bordImg = self.bordImg.scaled(120, 50)
+        self.bordSize = (120, 50)
+        self.bordPos = ( (-self.bordSize[0]//2, -self.imgSize[1]//2-55),
+                         (-self.bordSize[0]//2, -self.imgSize[1]//2+100),
+                         (-self.bordSize[0]//2, -self.imgSize[1]//2-100),
+                         (-self.bordSize[0]//2, self.imgSize[1]//2+50) )
+        self.coll = [True]*4
+        self.alarm = QSound('frog.wav')
+        self.contr = QHBoxLayout()
+        self.f = QLabel()
+        self.mainWidgetLayout.addStretch(2)
+        self.mainWidgetLayout.addLayout(self.contr)
+        self.rescanBut = QPushButton('Rescan')
+        self.scanSlider = QSlider(Qt.Horizontal)
+        self.contr.addWidget(self.rescanBut)
+        self.contr.addWidget(self.scanSlider)        
+    def paintEvent(self, event):
+        geom = self.geometry()
+        p = QPainter(self)
+        p.setRenderHint(QPainter.Antialiasing)   #smoothing for lines
+        p.setRenderHint(QPainter.SmoothPixmapTransform)  #smoothing for Pixmap        
+        p.setPen(Qt.blue)
+        p.setBrush(Qt.blue)
+        p.translate(geom.width()//2, geom.height()//2)
+        
+        p.drawPixmap(-self.imgSize[0]//2, -self.imgSize[1]//2, self.img)
+        p.setOpacity(0.7)
+        
+        for i in range(4):
+            if i == 2: p.rotate(90)
+            if self.coll[i]==True:
+                p.drawPixmap(*self.bordPos[i], self.bordImg)
+    def collisionFound(self, data):
+        for i in range(4):
+            if data[i] == True and self.coll[i]==False:
+                self.alarm = QSound('frog.wav')
+            self.coll[i] = data[i]
+        self.update()
 if __name__ == "__main__":
-    app1 = QApplication([])
+    app = QApplication([])
     window = Window()
-    sys.exit(app1.exec_())
+    sys.exit(app.exec_())
