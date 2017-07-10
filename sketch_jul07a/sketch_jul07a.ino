@@ -81,11 +81,12 @@ moving template:
  
  */
 void loop() {
+  /*
   for (unsigned char i = 0; i<4; i++)
   {
     if digitalRead(bord[i]) == true
     {
       changeMoving(0);
     }
-  }
+  }*/
 }
