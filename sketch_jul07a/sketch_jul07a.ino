@@ -1,91 +1,91 @@
-const char motorR[2]= {2, 3};
-const char motorL[2] = {4, 5};
+const char motor[4]= {2, 3, 4, 5};
 const char bord[4] = {6, 7, 8, 9};
-const char joy[2] = {A0, A1};
-int zeroJ[2];
-int data;
-void setup() {
-  Serial.begin(9600);
-  for(char i = 0; i<2; i++)
+//const char joy[2] = {A0, A1};
+//int zeroJ[2];
+int gaz, rot;
+const char moveTemp[5][4] = {   {0, 0, 0, 0}, {1, 0, 1, 0}, {0, 1, 0, 1}, {1, 0, 0, 1}, {0, 1, 1, 0} };
+void serialEvent()
+{
+  unsigned char temp;
+  const unsigned char stopper = '$';
+  unsigned char *data = new unsigned char [30];
+  unsigned int i = 0;
+  while (true){
+    if (Serial.available())
+    {
+      temp = char(Serial.read());
+      if (temp != stopper)
+        data[i++] = temp;
+      else
+        break;
+    }
+  }
+  unsigned int *j = new unsigned int;
+  *j = 0;
+  while (data[*j]!='/'){
+    if (data[*j] == '-')
+      rot *= -1;
+    else
+      rot *= 10 + (data[*j++]-'0');
+  }
+  *j++;
+  while (*j <= i){
+    if (data[*j] == '-')
+      gaz *= -1;
+    else
+      gaz *= 10 + (data[*j++]-'0');
+  }
+  delete j;
+  delete [] data;
+
+  if (gaz == 0 && rot == 0)
   {
-    pinMode(motorR[i], OUTPUT);
-    pinMode(motorL[i], OUTPUT);
-    pinMode(bord[i*2], INPUT);
-    pinMode(bord[(i+1)*2], INPUT);
-    zeroJ[i] = analogRead(joy[i]);
+    changeMoving(0);
+  }
+  else if (gaz > 0) {
+   changeMoving(1);
+  }
+  else if (gaz < 0) {
+   changeMoving(2);
+  }
+  else if (rot > 0) {
+   changeMoving(3);
+  }
+  else if (rot < 0) {
+   changeMoving(4);
   }
 }
-
+void changeMoving(int numb)
+{
+  for(unsigned int i = 0; i<4; i++)
+    digitalWrite(motor[i], moveTemp[numb][i]);
+}
+void setup() {
+  Serial.begin(9600);
+  for(char i = 0; i<4; i++)
+  {
+    pinMode(motor[i], true);
+    pinMode(bord[i*2], INPUT);
+    pinMode(bord[(i+1)*2], INPUT);
+    //zeroJ[i] = analogRead(joy[i]);
+  }
+}
+/*
+moving template:
+  1) Stop:  {0, 0, 0, 0}
+  2) Move Forvard: {1, 0, 1, 0]
+  3) Move Backward: {0, 1, 0, 1}
+  4) Rotate Left: {1, 0, 0, 1}
+  5) Rotate Right: {0, 1, 1, 0}
+ 
+ 
+ */
 void loop() {
-  if (Serial.available())
+  for (unsigned char i = 0; i<4; i++)
   {
-    data = Serial.read();
-    if (data == '1')
+    if digitalRead(bord[i]) == true
     {
-      digitalWrite(motorR[0], 1);
-      digitalWrite(motorR[1], 0);
-      digitalWrite(motorL[0], 1);
-      digitalWrite(motorL[1], 0);
-    }
-    else if (data == '2')
-    {
-      digitalWrite(motorR[0], 1);
-      digitalWrite(motorR[1], 0);
-      digitalWrite(motorL[0], 0);
-      digitalWrite(motorL[1], 1);
-    }
-    else if (data == '0')
-    {
-      digitalWrite(motorR[0], 0);
-      digitalWrite(motorR[1], 0);
-      digitalWrite(motorL[0], 0);
-      digitalWrite(motorL[1], 0);
-    }
-    else if (data == '3')
-    {
-      digitalWrite(motorR[0], 1);
-      digitalWrite(motorR[1], 0);
-      digitalWrite(motorL[0], 1);
-      digitalWrite(motorL[1], 0);
-    }
-    else if (data == '4')
-    {
-      digitalWrite(motorR[0], 0);
-      digitalWrite(motorR[1], 1);
-      digitalWrite(motorL[0], 0);
-      digitalWrite(motorL[1], 10);
+      changeMoving(0);
     }
   }
-  
- /*if (digitalRead(6))
-  {
-    digitalWrite(2, 1);
-    digitalWrite(3, 0);
-  }
-  else if (digitalRead(7))
-  {
-    digitalWrite(2, 0);
-    digitalWrite(3, 1);
-  }
-  else
-  {
-    digitalWrite(2, 0);
-    digitalWrite(3, 0);
-  }
-
-  if (digitalRead(8))
-  {
-    digitalWrite(4, 1);
-    digitalWrite(5, 0);
-  }
-  else if (digitalRead(9))
-  {
-    digitalWrite(4, 0);
-    digitalWrite(5, 1);
-  }
-  else
-  {
-    digitalWrite(4, 0);
-    digitalWrite(5, 0);
-  }*/
 }

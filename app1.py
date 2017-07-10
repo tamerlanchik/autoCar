@@ -7,21 +7,56 @@ from PyQt5.QtMultimedia import QSound
 import sys
 import time
 import random
+from serial import Serial
 from joystick import Joy
 
-portList=['COM'+str(i) for i in range(1, 4+1)]
+portList= ['Not state'] + ['COM'+str(i) for i in range(1, 4+1)]
 serialSpeedCases=['9600', '14400', '38400', '57600', '115200']
 rotate = 0
 gaz = 0
+class Net(QWidget):
+    isConnectedFlag = False
+    send =  pyqtSignal(str)
+    def __init__(self):
+        super().__init__()
+    def sendData(self,  data):
+        global portList
+        print(data)
+        if 'connect' in data:
+            port,  speed =  data.replace('connect',  '').split('/')
+            if port ==  portList[0]:
+                try:
+                    self.serial.close()
+                    self.isConnectedFlag =  False
+                    return 'Disconnected'
+                except:
+                    return 'Cannot disconnect'                
+            for i in range(3):
+                try:
+                    self.serial = Serial(port,  speed)
+                    self.isConnectedFlag =  True
+                    return 'Connected'
+                except:
+                    pass
+            else: return 'Cannot connect'
+        elif 'move' in data:
+            rot, gaz =  data.replace('move',  '').split('/')
+            message =  bytes( (rot +  '/' + gaz + '$').encode('utf-8'))
+            try:
+                self.serial.write(message)
+                return '<font color ="green">Data sent</font'
+            except:
+                return '<font color = "red">Cannot send</font>'
+                
 class Window (QMainWindow):
-    sendo =  pyqtSignal(int,  int)
+    send =  pyqtSignal(int,  int)
     def __init__(self):
         print('window')
         super().__init__()
         self.statusbar =  self.statusBar()
         self.cont =  Content(self, QDesktopWidget().screenGeometry())
-        self.cont.send[int,  int].connect(self.sendData)
-        #self.statusBar().showMessage("qqqqqqqqqqq")
+        self.cont.send[str].connect(self.sendData)
+        self.cont.showMessage[str].connect(self.showMessage)
         self.setCentralWidget(self.cont)
         self.setBackground()
         self.center()
@@ -29,12 +64,20 @@ class Window (QMainWindow):
         self.setWindowTitle('Navigare')
         self.setWindowIcon(QIcon('icon.jpg'))
         
-        #self.comm =  Communicator()
-        
+        self.net =  Net()
+        self.net.send[str].connect(self.sendData)
         self.show()
-    def sendData(self,  a,  b):
-        self.sendo.emit(a,  b)
-        self.statusBar().showMessage(str(a))
+    def sendData(self,  data):
+        self.statusBar().showMessage(str(data))
+        ans =  self.net.sendData(data)
+        self.statusbar.showMessage(ans)
+        if 'connect' in data:
+            if ans == 'Connected':
+                self.cont.widget[0].connectStateChanged(True)
+            elif ans == 'Disconnected':
+                self.cont.widget[0].connectStateChanged(False)
+    def showMessage(self,  message):
+        self.statusbar.showMessage(message)
     def setBackground(self):
         pal =  QPalette()
         pal.setColor(QPalette.Background,  Qt.white)
@@ -43,7 +86,7 @@ class Window (QMainWindow):
     def center(self):
         
         screen =  QDesktopWidget().screenGeometry()
-        self.resize(screen.width()/ 2,  screen.height() / 2)
+        self.resize(screen.width()/ 4,  screen.height() / 2)
         size =  self.geometry()
         #x =  (screen.width() - size.width()) / 2
         #y = (screen.height() - size.height()) / 2
@@ -51,10 +94,11 @@ class Window (QMainWindow):
         y = 10
         self.move(x,  y)        
 class Content(QWidget):
-    numberOfWidgets = 3
+    numberOfWidgets = 6
     res =  pyqtSignal(int, int)
-    send =  pyqtSignal(int, int)
-    windows =  [True] * 3
+    send =  pyqtSignal(str)
+    showMessage =  pyqtSignal(str)
+    windows =  [1, 0, 0, 0, 0, 0]
     windows[0]=True
     def __init__(self,  parent, screen):
         super().__init__(parent)
@@ -71,13 +115,14 @@ class Content(QWidget):
             self.mainBox.addWidget(self.controlSplitter[i])
         
         #creating widgets
-        self.widgets = [Collisions(), Locator_aside(), Locator_atop() ]
+        self.widgets = [Control(), Camera(),  Map(),  Locator_aside(), Locator_atop(), Collisions() ]
         
-        #self.widgets[0].changeWindSignal[int, int].connect(self.changeWindows)
+        #self.widgets[0].send[int].connect(self.sendData)
         
         #adding widgets to the layout
         for i in range(self.numberOfWidgets):
-            self.widgets[i].send[int,  int].connect(self.sendData)
+            self.widgets[i].send[str].connect(self.sendData)
+            self.widgets[i].showMessage[str].connect(self.sendMessage)
             self.controlSplitter[i//3].addWidget(self.widgets[i])
             if self.windows[i] == True:            
                 self.widgets[i].show()
@@ -85,31 +130,35 @@ class Content(QWidget):
                 self.widgets[i].hide()   
         
         self.setLayout(self.mainBox)
-    def sendData(self,  a,  b):
-        self.send.emit(a,  b)
+    def sendData(self,  data):
+        self.send.emit(data)
     def sendMessage(self,  m):
-        self.msg.emit('Hi')
+        self.showMessage.emit(m)
     
 class Widgets(QFrame):
-    send =  pyqtSignal(int,  int)
+    send =  pyqtSignal(str)
+    showMessage =  pyqtSignal(str)
     def __init__(self):
         super().__init__()
         self.setFrameShape(QFrame.StyledPanel)     
         self.create()  
-        self.setMinimumHeight(300)
-        self.setMinimumWidth(450)
+        self.setMinimumHeight(400)
+        self.setMinimumWidth(400)
         
     def create(self):
         self.mainWidgetLayout =  QVBoxLayout(self)
-        self.setLayout(self.mainWidgetLayout) 
+        self.setLayout(self.mainWidgetLayout)
+    def sendData(self,  data):
+        self.send.emit(data)   
         
 class Control(Widgets):
-    changeWindSignal =  pyqtSignal(int, int)
+    send =  pyqtSignal(str)
     global portList
     global serialSpeedCases
     global rotate
     global gaz
     maxRange = {'x':(-90, 90), 'y': (-30, 30) }
+    isConnected =  False
     def __init__(self):
         super().__init__()
         self.createMenu()
@@ -219,10 +268,12 @@ class Control(Widgets):
         self.choosePortBox=QFormLayout()
         self.cbPort =  QComboBox()
         self.cbPort.setMaximumWidth(80)
-        self.cbPort.addItem("Not state")
         self.cbPort.addItems(portList)
+        self.cbPort.activated[int].connect(self.connect)
+        self.cbLabel =  QLabel('<font color = "red">Disconnected</font>')
         
         self.choosePortBox.addRow("Port",  self.cbPort)
+        self.choosePortBox.addRow("State",  self.cbLabel)
         
         self.connectGBLayout.addLayout(self.choosePortBox)
         
@@ -238,12 +289,10 @@ class Control(Widgets):
         self.connectGB.setLayout(self.connectGBLayout)
         self.mainWidgetLayout.addWidget(self.connectGB)
         
-        self.pConnect =  QPushButton('Disconnected')
         self.pSending =  QPixmap('pause.png')
         self.lSending =  QLabel()
         self.lSending.setPixmap(self.pSending)
         self.pCheck =  QPushButton('Check')
-        self.connectGBLayout.addWidget(self.pConnect)
         self.connectGBLayout.addWidget(self.lSending)
         self.connectGBLayout.addWidget(self.pCheck)
 
@@ -261,13 +310,24 @@ class Control(Widgets):
         self.joystick.setPosition(rotate, gaz)
         self.rotSlider.setValue(rotate)
         self.gazSlider.setValue(gaz)
-        self.send.emit(rotate,  gaz)
+        self.send.emit('move' + str(rotate) + '/' + str(gaz))
     def joystickMoved(self, x, y):
         global gaz
         global rotate
         gaz = y
         rotate = x
         self.updateControls()
+    def connect(self,  port):
+        global portList
+        speed =  self.cbSpeed.currentText()
+        self.sendData('connect' + portList[port] + '/' + speed)
+    def connectStateChanged(self, data):
+        if data ==  True:
+            self.cbLabel.setText('font color = "green">Connected</font>')
+        else:
+            self.cbLabel.setText('<font color = "red">Disconnected</font>')
+            
+
         
 class Camera(Widgets):
     maxRange = { 'x': [-90, 90], 'y': [-90, 90] }
