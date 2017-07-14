@@ -1,6 +1,9 @@
 #include <Servo.h>
 #include <TimerOne.h> 
-//Servo servo;
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+Servo servo;
 const int echoPin = 9; 
 const int trigPin = 8;
 const char motor[4]= {2, 3, 4, 5};
@@ -25,8 +28,9 @@ void serialEvent()
   const unsigned char stopper = '$';
   unsigned char *data = new unsigned char [30];
   unsigned int i = 0;
-  while (true){
-    if (Serial.available())
+  lcd.clear();
+  lcd.print("Received");
+    while (Serial.available())
     {
       temp = char(Serial.read());
       if (temp != stopper)
@@ -34,41 +38,49 @@ void serialEvent()
       else
         break;
     }
-  }
   unsigned int *j = new unsigned int;
   *j = 0;
-  while (data[*j]!='/'){
-    if (data[*j] == '-')
-      rot *= -1;
-    else
-      rot *= 10 + (data[*j++]-'0');
+  if (data[0] == '@'){
+    lcd.print("Rescan");
+    rescan();
   }
-  *j++;
-  while (*j <= i){
-    if (data[*j] == '-')
-      gaz *= -1;
-    else
-      gaz *= 10 + (data[*j++]-'0');
-  }
-  delete j;
-  delete [] data;
-
-  if (gaz == 0 && rot == 0)
-  {
-    changeMoving(0);
-  }
-  else if (gaz > 0) {
-   changeMoving(1);
-  }
-  else if (gaz < 0) {
-   changeMoving(2);
-  }
-  else if (rot > 0) {
-   changeMoving(3);
-  }
-  else if (rot < 0) {
-   changeMoving(4);
-  }
+  else{
+    lcd.clear();
+    for(int j = 0; j<i; j++)
+      lcd.print(data[j]);
+    while (data[*j]!='/'){
+      if (data[*j] == '-')
+        rot *= -1;
+      else
+        rot *= 10 + (data[*j++]-'0');
+    }
+    *j++;
+    while (*j <= i){
+      if (data[*j] == '-')
+        gaz *= -1;
+      else
+        gaz *= 10 + (data[*j++]-'0');
+    }
+    delete j;
+    delete [] data;
+  
+    if (gaz == 0 && rot == 0)
+    {
+      changeMoving(0);
+    }
+    else if (gaz > 0) {
+     changeMoving(1);
+    }
+    else if (gaz < 0) {
+     changeMoving(2);
+    }
+    else if (rot > 0) {
+     changeMoving(3);
+    }
+    else if (rot < 0) {
+     changeMoving(4);
+    }
+    servo.attach(gaz);}
 }
 void changeMoving(int numb)
 {
@@ -76,20 +88,8 @@ void changeMoving(int numb)
     digitalWrite(motor[i], moveTemp[numb][i]);
 }
 void printN(){
-  unsigned int temp = distance;
-  for(int j = 0; j<4; j++)
-   {
-    digitalWrite(LATCH, LOW);
-    shiftOut(SER, CLK, MSBFIRST, ~(state0<<j));
-    if (temp>0)
-      shiftOut(SER, CLK, MSBFIRST, numbs[temp%10]);
-    else
-      shiftOut(SER, CLK, MSBFIRST, B00000000);
-    digitalWrite(LATCH, HIGH);
-    temp /= 10;
-    delay(1);
-   }
-
+  lcd.clear();
+  lcd.print(distance);
 }
 int readSonar(){
   int dist = 0;
@@ -104,6 +104,8 @@ int readSonar(){
   return (dist/10);
 }
 void setup() {
+  lcd.init();
+  lcd.backlight();
   Serial.begin(9600);
   for(char i = 0; i<4; i++)
   {
@@ -115,11 +117,12 @@ void setup() {
   pinMode(trigPin, OUTPUT); 
   pinMode(echoPin, INPUT);
   pinMode(12, OUTPUT);
-  //servo.attach(6);
+  servo.attach(6);
+  servo.write(50);
   pinMode(SER, OUTPUT);
   pinMode(LATCH, OUTPUT);
   pinMode(CLK, OUTPUT);
-  //Timer1.initialize(15000);
+  //Timer1.initialize(30000);
   //Timer1.attachInterrupt(printN);
 }
 /*
@@ -132,45 +135,41 @@ moving template:
  
  
  */
-void loop() {
-  /*for(int i = 0; i<180; i+=10)
+void rescan()
+{
+  servo.write(0);
+  delay(400);
+  for (int i = 0; i<130; i+=20)
   {
     servo.write(i);
-    digitalWrite(trigPin, LOW); 
-    delayMicroseconds(2); 
-    digitalWrite(trigPin, HIGH); 
-    delayMicroseconds(10); 
-    digitalWrite(trigPin, LOW); 
-    m = (pulseIn(echoPin, HIGH)/58);
-    Serial.println(m);
-    if (m <= border){
-      changeMoving(1);
-      digitalWrite(12, HIGH);}
-    else
-      {changeMoving(2);
-      digitalWrite(12, LOW);}
-    delay(15);
+    delay(10);
+    Serial.print(i);
+    Serial.print('/');
+    Serial.println(readSonar());
+    delay(2);
+    //Serial.print('$');
   }
   delay(100);
-  servo.write(0);
-  delay(300);*/
-  /*do{
-    distance = readSonar();
-    delay(10);
-    if (readSonar() - 
-    Serial.println(distance);
-    printN();
-    changeMoving(3);
-  }
-  while (distance <= border);
-  changeMoving(1);*/
-  if (readSonar()<= border)
+  Serial.println('%');
+}
+void loop() {
+  /*for (int i = 0; i<180; i+=5)
+  {
+    servo.write(i);
+    delay(300);
+    Serial.print(i);
+    Serial.print('/');
+    Serial.println(readSonar());
+  }*/
+  /*if (readSonar()<= border)
   {
     if (readSonar() <= border)
     {
       changeMoving(3);
+      
     }
   }
   else
-    changeMoving(1);
+    changeMoving(1);*/
+    
 }

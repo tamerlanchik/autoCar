@@ -1,22 +1,23 @@
 from PyQt5.QtWidgets import (QMainWindow, QDesktopWidget,  QWidget, QLCDNumber, QSlider,
-    QVBoxLayout, QApplication, QLabel, QHBoxLayout, QComboBox, QSplitter,  QAction, QFormLayout,  QInputDialog, QMessageBox, QPushButton,  QGroupBox,  QCheckBox,  QLineEdit,  QFrame,  QDial)
-from PyQt5.QtGui import QIcon, QColor,  QPalette,  QImage,  QPixmap, QPainter, QPolygonF
+    QVBoxLayout, QApplication, QLabel, QHBoxLayout, QComboBox, QSplitter,  QAction, QFormLayout,  QInputDialog, QScrollArea,  QMessageBox, QPushButton,  QGroupBox,  QCheckBox,  QLineEdit,  QFrame,  QDial)
+from PyQt5.QtGui import QIcon, QColor,  QPalette,  QImage,  QPixmap, QPainter, QPolygonF,  QBrush
 import os
-from PyQt5.QtCore import Qt,  QRect,  pyqtSignal,  QSignalMapper, QSize, QPointF
+from PyQt5.QtCore import Qt,  QRect,  pyqtSignal,  QSignalMapper, QSize, QPointF,  QBasicTimer
 from PyQt5.QtMultimedia import QSound
 import sys
 import time
 import random
 from serial import Serial
 from joystick import Joy
-
-portList= ['Not state'] + ['COM'+str(i) for i in range(1, 4+1)]
+import math
+portList= ['Not state'] + ['COM'+str(i) for i in range(1, 20)]
 serialSpeedCases=['9600', '14400', '38400', '57600', '115200']
 rotate = 0
 gaz = 0
 class Net(QWidget):
     isConnectedFlag = False
     send =  pyqtSignal(str)
+    serial =  Serial()
     def __init__(self):
         super().__init__()
     def sendData(self,  data):
@@ -33,8 +34,11 @@ class Net(QWidget):
                     return 'Cannot disconnect'                
             for i in range(3):
                 try:
-                    self.serial = Serial(port,  speed)
-                    self.isConnectedFlag =  True
+                    self.serial = Serial(port,  speed,  dsrdtr = 0, timeout = 10)
+                    #self.serial.open()
+                    if self.serial.isOpen() ==  True:
+                        self.isConnectedFlag =  True
+                        #self.serial.open()
                     return 'Connected'
                 except:
                     pass
@@ -47,6 +51,31 @@ class Net(QWidget):
                 return '<font color ="green">Data sent</font'
             except:
                 return '<font color = "red">Cannot send</font>'
+        elif "rescan" in data:
+            try:
+                self.serial.write(bytes('@'.encode('utf-8')))
+                return "Starting rescan"
+            except:
+                return "Cannot rescan"
+    def receiveData(self):
+        try:
+            if self.isConnectedFlag ==  True:
+                ans =  ''
+                if self.serial.inWaiting() > 0:
+                    print("Adding data" + str(self.serial.inWaiting()))
+                    ans += str(self.serial.readline())
+                if ans !=  '':
+                    if '%' in ans:
+                        return "Stop"
+                    else:
+                        print("Sending data")
+                        return ans[2:]
+            else:
+                return "error"
+        except:
+            print("Error in receiveData (Net)")
+            
+        
                 
 class Window (QMainWindow):
     send =  pyqtSignal(int,  int)
@@ -54,10 +83,13 @@ class Window (QMainWindow):
         print('window')
         super().__init__()
         self.statusbar =  self.statusBar()
+        self.scrollArea =  QScrollArea()
         self.cont =  Content(self, QDesktopWidget().screenGeometry())
-        self.cont.send[str].connect(self.sendData)
+        self.scrollArea.setWidget(self.cont)
+        self.cont.send[str,  int].connect(self.sendData)
+        self.cont.receive[int].connect(self.receiveData)
         self.cont.showMessage[str].connect(self.showMessage)
-        self.setCentralWidget(self.cont)
+        self.setCentralWidget(self.scrollArea)
         self.setBackground()
         self.center()
         
@@ -67,15 +99,25 @@ class Window (QMainWindow):
         self.net =  Net()
         self.net.send[str].connect(self.sendData)
         self.show()
-    def sendData(self,  data):
+        self.cont.widgets[4].start()
+    def closeEvent(self,  event):
+        self.net.sendData("connect/0")
+    def sendData(self,  data,  numb):
         self.statusBar().showMessage(str(data))
         ans =  self.net.sendData(data)
         self.statusbar.showMessage(ans)
         if 'connect' in data:
             if ans == 'Connected':
-                self.cont.widget[0].connectStateChanged(True)
+                for i in range(self.cont.numberOfWidgets):
+                    self.cont.widgets[i].isConnectedFlag = True
+                    #self.cont.widget[numb].connectStateChanged(True)
             elif ans == 'Disconnected':
-                self.cont.widget[0].connectStateChanged(False)
+                for i in range(self.cont.numberOfWidgets):
+                    self.cont.widgets[i].isConnectedFlag = False
+                    #self.cont.widget[numb].connectStateChanged(False)
+    def receiveData(self,  numb):
+        ans =  self.net.receiveData()
+        self.cont.widgets[numb].data =  ans
     def showMessage(self,  message):
         self.statusbar.showMessage(message)
     def setBackground(self):
@@ -86,7 +128,7 @@ class Window (QMainWindow):
     def center(self):
         
         screen =  QDesktopWidget().screenGeometry()
-        self.resize(screen.width()/ 4,  screen.height() / 2)
+        self.resize(screen.width()/ 1.3,  screen.height() / 1.2)
         size =  self.geometry()
         #x =  (screen.width() - size.width()) / 2
         #y = (screen.height() - size.height()) / 2
@@ -95,11 +137,12 @@ class Window (QMainWindow):
         self.move(x,  y)        
 class Content(QWidget):
     numberOfWidgets = 6
+    receive =  pyqtSignal(int)
     res =  pyqtSignal(int, int)
-    send =  pyqtSignal(str)
+    send =  pyqtSignal(str,  int)
     showMessage =  pyqtSignal(str)
-    windows =  [1, 0, 0, 0, 0, 0]
-    windows[0]=True
+    windows =  [1, 0, 0, 0, 1, 0]
+    #windows[0]=True
     def __init__(self,  parent, screen):
         super().__init__(parent)
         self.screen = screen
@@ -115,31 +158,41 @@ class Content(QWidget):
             self.mainBox.addWidget(self.controlSplitter[i])
         
         #creating widgets
-        self.widgets = [Control(), Camera(),  Map(),  Locator_aside(), Locator_atop(), Collisions() ]
+        self.widgets = [Control(pasp =  0), Camera(pasp =  1),  Map(pasp =  2),  Locator_aside(pasp =  3), Locator_atop(pasp =  4), Collisions(pasp =  5) ]
         
         #self.widgets[0].send[int].connect(self.sendData)
         
         #adding widgets to the layout
         for i in range(self.numberOfWidgets):
-            self.widgets[i].send[str].connect(self.sendData)
+            self.widgets[i].send[str,  int].connect(self.sendData)
+            self.widgets[i].receive[int].connect(self.receiveData)
             self.widgets[i].showMessage[str].connect(self.sendMessage)
             self.controlSplitter[i//3].addWidget(self.widgets[i])
             if self.windows[i] == True:            
                 self.widgets[i].show()
+                self.widgets[i].isActive =  True
             else:
                 self.widgets[i].hide()   
         
         self.setLayout(self.mainBox)
-    def sendData(self,  data):
-        self.send.emit(data)
+    def sendData(self,  data,  numb):
+        self.send.emit(data,  numb)
+    def receiveData(self,  numb):
+        self.receive.emit(numb)
     def sendMessage(self,  m):
         self.showMessage.emit(m)
     
 class Widgets(QFrame):
-    send =  pyqtSignal(str)
+    send =  pyqtSignal(str,  int)
+    receive =  pyqtSignal(int)
     showMessage =  pyqtSignal(str)
-    def __init__(self):
+    isActive = False
+    pasp =  -1
+    data =  0
+    isConnectedFlag =  False
+    def __init__(self,  pasp):
         super().__init__()
+        self.pasp =  pasp
         self.setFrameShape(QFrame.StyledPanel)     
         self.create()  
         self.setMinimumHeight(400)
@@ -149,18 +202,19 @@ class Widgets(QFrame):
         self.mainWidgetLayout =  QVBoxLayout(self)
         self.setLayout(self.mainWidgetLayout)
     def sendData(self,  data):
-        self.send.emit(data)   
+        self.send.emit(data,  self.pasp)
+    def receiveData(self):
+        self.receive.emit(self.pasp)
         
 class Control(Widgets):
-    send =  pyqtSignal(str)
     global portList
     global serialSpeedCases
     global rotate
     global gaz
     maxRange = {'x':(-90, 90), 'y': (-30, 30) }
     isConnected =  False
-    def __init__(self):
-        super().__init__()
+    def __init__(self,  pasp):
+        super().__init__(pasp)
         self.createMenu()
         self.createControl()
         self.createConnecter()
@@ -233,6 +287,7 @@ class Control(Widgets):
         self.bKey =  QPushButton('key')
         self.bFix =  QPushButton('Fix')
         self.bLog =  QPushButton('Log')
+        self.bLog.clicked.connect(self.p)
         self.bSettings =  QPushButton('set')
         self.bKey.setMaximumWidth(40)
         self.bFix.setMaximumWidth(40)
@@ -259,7 +314,8 @@ class Control(Widgets):
         self.mainWidgetLayout.addLayout(self.rotSliderLayout)
         self.mainWidgetLayout.addLayout(self.controlLayout)
         self.mainWidgetLayout.addLayout(self.bottomLayout)
-        
+    def p(self):
+        print('Ffffffff')
     def createConnecter(self):
         self.connectGB =  QGroupBox(self)
         
@@ -270,6 +326,7 @@ class Control(Widgets):
         self.cbPort.setMaximumWidth(80)
         self.cbPort.addItems(portList)
         self.cbPort.activated[int].connect(self.connect)
+        self.cbPort.setCurrentIndex(15)
         self.cbLabel =  QLabel('<font color = "red">Disconnected</font>')
         
         self.choosePortBox.addRow("Port",  self.cbPort)
@@ -281,6 +338,7 @@ class Control(Widgets):
         self.cbSpeed =  QComboBox()
         self.cbSpeed.setMaximumWidth(80)
         self.cbSpeed.addItems(serialSpeedCases)
+        self.cbSpeed.setCurrentIndex(0)
     
         self.chooseSpeedBox.addRow("Speed",  self.cbSpeed)
     
@@ -310,7 +368,7 @@ class Control(Widgets):
         self.joystick.setPosition(rotate, gaz)
         self.rotSlider.setValue(rotate)
         self.gazSlider.setValue(gaz)
-        self.send.emit('move' + str(rotate) + '/' + str(gaz))
+        self.send.emit('move' + str(rotate) + '/' + str(gaz),  self.pasp)
     def joystickMoved(self, x, y):
         global gaz
         global rotate
@@ -331,8 +389,8 @@ class Control(Widgets):
         
 class Camera(Widgets):
     maxRange = { 'x': [-90, 90], 'y': [-90, 90] }
-    def __init__(self):
-        super().__init__()
+    def __init__(self,  pasp):
+        super().__init__(pasp)
         self.createControl()
     def createControl(self):
     
@@ -342,8 +400,8 @@ class Camera(Widgets):
         self.joyLayout.addWidget(self.joystick)
         self.mainWidgetLayout.addLayout(self.joyLayout) 
 class Map(Widgets):
-    def __init__(self):
-        super().__init__() 
+    def __init__(self,  pasp):
+        super().__init__(pasp) 
         self.createControl()
     def createControl(self):
     
@@ -380,8 +438,8 @@ class Map(Widgets):
 
 class Locator_aside(Widgets):  
     points = ( (-100, -100), (-180, -80), (-120, -70), (-220, -60) )
-    def __init__(self):
-        super().__init__()
+    def __init__(self,  pasp):
+        super().__init__(pasp)
         self.style = open('locator.css', 'r')
         self.styleSheet = self.style.read()
         self.style.close()
@@ -460,13 +518,14 @@ class Locator_aside(Widgets):
         p.drawPolygon(self.polygon)        
 class Locator_atop(Widgets):
     points = ( (-100, -100), (-80, -180), (-70, -120), (-60, -220) )
-    def __init__(self):
-        super().__init__()
+    def __init__(self,  pasp):
+        super().__init__(pasp)
         self.style = open('locator.css', 'r')
         self.styleSheet = self.style.read()
         self.style.close()
         self.setStyleSheet(self.styleSheet)        
-        self.setMinimumWidth(400)
+        self.setMinimumWidth(700)
+        self.setMinimumHeight(600)
         self.iconLocator = QPixmap('locator-atop.png')
         self.points = self.points[::-1]
         self.contr = QHBoxLayout()
@@ -475,12 +534,50 @@ class Locator_atop(Widgets):
         self.mainWidgetLayout.addLayout(self.contr)
         self.rescanBut = QPushButton('Rescan')
         self.rescanBut.setMinimumSize(60, 20)
-        self.rescanBut.toggled.connect(self.rescan)
+        self.rescanBut.clicked.connect(self.rescan)
         self.scanSlider = QSlider(Qt.Horizontal)
         self.contr.addWidget(self.rescanBut)
-        self.contr.addWidget(self.scanSlider) 
+        self.contr.addWidget(self.scanSlider)
+        self.timer =  QBasicTimer()
+        self.polygon =  QPolygonF()
+        self.angle =  90
+    def start(self):
+        #self.timer.start(100,  self)
+        #self.sendData("connect19/9600")
+        print("Started")
+        print()
+    def timerEvent(self,  event):
+        if self.isConnectedFlag ==  True:
+            self.receiveData()
+            self.showMessage.emit(self.data)
+            if self.data !=  None:
+                if self.data ==  "Stop":
+                    print("Stop")
+                    self.timer.stop()
+                else:
+                    self.data =  self.data[:-5]
+                    print(self.data)
+                    i,  l =  map(int, self.data.replace('\n',  '').split('/'))
+                    self.angle =  90 - i
+                    x =  l *  math.cos(math.radians(i))
+                    y =  l *  math.sin(math.radians(-i))
+                    #self.polygon.append(QPointF(x,  y))
+                    self.points.append((int(x * 8),  int(y * 8)))
+                    print(self.points[-1])
+        self.update()
     def rescan(self):
-        print("Rescan")
+        geom =  self.geometry()
+        print(geom)
+        self.polygon = QPolygonF()
+        self.polygon.append(QPointF(-geom.width()//2, -geom.height() // 2))
+        self.polygon.append(QPointF(-geom.width()//2, -geom.height()*0.9))
+        self.polygon.append(QPointF(geom.width()//2, -geom.height()*0.9))
+        self.polygon.append(QPointF(geom.width()//2, -geom.height() // 2))
+        
+        self.points =  []
+        self.sendData("rescan")
+        self.update()
+        self.timer.start(10,  self)
     def paintEvent(self, event):
         try:
             geom  = self.geometry()
@@ -511,23 +608,23 @@ class Locator_atop(Widgets):
             p.setOpacity(1)
             p.drawLine(-geom.width()//2, 0, geom.width(), 0)   #hor Line
             
-            p.rotate(30)
+            p.rotate(self.angle)
             p.drawLine(0, 0, 0, -geom.height()) #rotatable line
             p.drawPixmap(-20, -27, self.iconLocator) #locator icon
             #-----------------------------------------------------------
             
             #drawing barrier map
-            p.rotate(-30)
+            p.rotate(-self.angle)
             p.setBrush(Qt.blue)
             p.setOpacity(0.2)
             
-            self.polygon = QPolygonF()
-            self.polygon.append(QPointF(-geom.width()//2, self.points[-1][1]))
-            self.polygon.append(QPointF(-geom.width()//2, -geom.height()*0.9))
-            self.polygon.append(QPointF(geom.width()//2, -geom.height()*0.9))
-            self.polygon.append(QPointF(geom.width()//2, self.points[-1][1]))
+            
             for u in self.points:
-                p.drawEllipse(u[0]-1, u[1]-1, 2, 2)
+                p.setOpacity(1)
+                p.setBrush(QBrush(Qt.red,  Qt.SolidPattern))
+                p.drawEllipse(u[0]-2, u[1]-2, 5, 5)
+                p.setOpacity(0.2)
+                p.setBrush(Qt.blue)
                 self.polygon.append(QPointF(*u))
                 
             p.drawPolygon(self.polygon)
@@ -536,8 +633,8 @@ class Locator_atop(Widgets):
 
 class Collisions(Widgets):
     coll = [False, False, False, False]
-    def __init__(self):
-        super().__init__()
+    def __init__(self, pasp):
+        super().__init__(pasp)
         self.setMinimumWidth(300)
         self.setMinimumHeight(200)
         self.img = QPixmap('car.png')
