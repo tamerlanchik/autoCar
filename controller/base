@@ -51,8 +51,8 @@ public:
 class Trans
 {
   private:
-    RF24 radio;
-    LiquidCrystal_I2C lcd;
+    static const RF24 radio;
+    static const LiquidCrystal_I2C lcd;
     static const byte LED=8;
     static const byte BUTTON=7;
     static const byte ledComm = 8;
@@ -61,8 +61,7 @@ class Trans
     double del;
     bool butState, butStateTemp, ledState;  
   public:
-    Trans():lcd(0x27,16,2), radio(9, 10)
-    {}
+    Trans(){}
     void init(){
       randomSeed(analogRead(0));
       pinMode(BUTTON, INPUT);
@@ -114,14 +113,15 @@ class Trans
         digitalWrite(LED, ledState);
       }
     }
-    bool radioAvailable()
-    {
+    bool radioAvailable(){
       if(radio.available())
         return true;
       else
         return false;
     }
 };
+const RF24 Trans::radio(9, 10);
+const LiquidCrystal_I2C Trans::lcd(0x27,16,2);
 Trans item;
 void setup(){
   item.init();
