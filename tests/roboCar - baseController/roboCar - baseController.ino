@@ -1,5 +1,6 @@
 #include <Arduino.h>
-
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
 class Joysticks{
 private:
     const byte motorJoys[2] = {2, 3};
@@ -8,7 +9,7 @@ private:
     const byte scanBut = 4;
 
     int preMotorsVals[2];
-    int preSonarAngle;
+    byte preSonarAngle;
     int motorJoysNeutral[2];
     int sonarJoyNeutral;
 
@@ -18,7 +19,37 @@ public:
     bool getSonarState(void) {void}
 
 };
+class Indication{
+private:
+    //bool isMovingFlag;
+    //bool isScanningFlag;
 
+    const LiquidCrystal_I2C lcd;
+    const byte movingFlagLED = 5;
+    const byte scanningFlagLED = 6;
+public:
+    bool updateLCD(int data[]) {void}
+    bool setMovingFlagLED(bool flag) {void}
+    bool setScanningFlagLED
+};
+class Manager{
+private:
+    int motorVals[2];
+    int sonarAngle;
+    bool isScanningFlag;
+    bool isSignallingFlag;
+    bool isMovingFlag;
+    int sensorData[3];
+    int exertData[3];
+public:
+    bool readRadio();
+    bool readControl();
+    bool setIndication();
+    bool sendCommandRadio();
+    bool sendCommandSerial();
+    void devSerialEvent();
+    void ascSensors();
+};
 void setup()
 {
 	Serial.begin(9600);
