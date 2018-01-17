@@ -61,10 +61,10 @@
 1362986950 c:\program files (x86)\codeblocks arduino\arduino\hardware\arduino\variants\standard\pins_arduino.h
 	<avr/pgmspace.h>
 
-1516202114 source:b:\andrey\documents\github\autocar\tests\robocar - basecontroller\robocar - basecontroller.ino
+1516216809 source:b:\andrey\documents\github\autocar\tests\robocar - basecontroller\robocar - basecontroller.ino
 	<Arduino.h>
-	<LiquidCrystal_I2C.h>
-	<Wire.h>
+	<Manager.cpp>
+	<pins.h>
 
 315522000 c:\program files (x86)\codeblocks arduino\arduino\libraries\liquidcrystal_i2c\liquidcrystal_i2c.h
 	<inttypes.h>
@@ -75,4 +75,134 @@
 	<inttypes.h>
 	"Print.h"
 	<Wire.h>
+
+1469594882 source:c:\program files (x86)\codeblocks arduino\arduino\libraries\rf24\rf24.cpp
+	"nRF24L01.h"
+	"RF24_config.h"
+	"RF24.h"
+
+1469594882 c:\program files (x86)\codeblocks arduino\arduino\libraries\rf24\nrf24l01.h
+
+1469594882 c:\program files (x86)\codeblocks arduino\arduino\libraries\rf24\rf24_config.h
+	"utility/ATXMegaD3/RF24_arch_config.h"
+	"utility/includes.h"
+	"utility/ATTiny/RF24_arch_config.h"
+	"utility/LittleWire/RF24_arch_config.h"
+	"utility/Teensy/RF24_arch_config.h"
+	<Arduino.h>
+	<SPI_UART.h>
+	<SPI.h>
+	<stdint.h>
+	<stdio.h>
+	<string.h>
+	<SPI.h>
+	<avr/pgmspace.h>
+
+1469594882 c:\program files (x86)\codeblocks arduino\arduino\libraries\rf24\utility\atxmegad3\rf24_arch_config.h
+	<stddef.h>
+	<avr/pgmspace.h>
+	"spi.h"
+	"gpio.h"
+	"compatibility.h"
+	<stdint.h>
+	<stdio.h>
+	<string.h>
+
+1469594882 c:\program files (x86)\codeblocks arduino\arduino\libraries\rf24\utility\atxmegad3\spi.h
+	<avr/io.h>
+	<stdint.h>
+
+1469594882 c:\program files (x86)\codeblocks arduino\arduino\libraries\rf24\utility\atxmegad3\gpio.h
+	<avr/io.h>
+	"gpio_helper.h"
+
+1469594882 c:\program files (x86)\codeblocks arduino\arduino\libraries\rf24\utility\atxmegad3\gpio_helper.h
+	<avr/io.h>
+
+1469594882 c:\program files (x86)\codeblocks arduino\arduino\libraries\rf24\utility\atxmegad3\compatibility.h
+	<stddef.h>
+
+1469594882 c:\program files (x86)\codeblocks arduino\arduino\libraries\rf24\utility\attiny\rf24_arch_config.h
+	<WProgram.h>
+	<Arduino.h>
+	<stddef.h>
+	"spi.h"
+	<avr/pgmspace.h>
+
+1469594882 c:\program files (x86)\codeblocks arduino\arduino\libraries\rf24\utility\attiny\spi.h
+	<stdio.h>
+	<Arduino.h>
+	<avr/pgmspace.h>
+
+1469594882 c:\program files (x86)\codeblocks arduino\arduino\libraries\rf24\utility\littlewire\rf24_arch_config.h
+	<stdint.h>
+	<stdio.h>
+	<time.h>
+	<string.h>
+	<sys/time.h>
+	<stddef.h>
+	<LittleWireSPI/littlewirespi.h>
+	<LittleWireSPI/avr_fixes.h>
+
+1469594882 c:\program files (x86)\codeblocks arduino\arduino\libraries\rf24\utility\teensy\rf24_arch_config.h
+	<WProgram.h>
+	<Arduino.h>
+	<stddef.h>
+	<stdint.h>
+	<stdio.h>
+	<string.h>
+	<SPI.h>
+
+1469594882 c:\program files (x86)\codeblocks arduino\arduino\libraries\rf24\rf24.h
+	"RF24_config.h"
+	"utility/includes.h"
+	<DigitalIO.h>
+
+1516216834 source:b:\andrey\documents\github\autocar\tests\robocar - basecontroller\radioextended.cpp
+	<nRF24L01.h>
+	<SPI.h>
+	<RF24.h>
+
+1516216214 source:b:\andrey\documents\github\autocar\tests\robocar - basecontroller\joysticks.cpp
+	<Arduino.h>
+	<pins.h>
+
+1516216391 b:\andrey\documents\github\autocar\tests\robocar - basecontroller\pins.h
+
+1516216391 source:b:\andrey\documents\github\autocar\tests\robocar - basecontroller\pins.cpp
+
+1516216069 b:\andrey\documents\github\autocar\tests\robocar - basecontroller\pins.cpp
+
+1516216834 b:\andrey\documents\github\autocar\tests\robocar - basecontroller\radioextended.cpp
+	<nRF24L01.h>
+	<SPI.h>
+	<RF24.h>
+
+1516216214 b:\andrey\documents\github\autocar\tests\robocar - basecontroller\joysticks.cpp
+	<Arduino.h>
+	<pins.h>
+
+1516216594 source:b:\andrey\documents\github\autocar\tests\robocar - basecontroller\indication.cpp
+	<Arduino.h>
+	<Wire.h>
+	<LiquidCrystal_I2C.h>
+	<pins.h>
+
+1516216717 source:b:\andrey\documents\github\autocar\tests\robocar - basecontroller\manager.cpp
+	<RadioExtended.cpp>
+	<Joysticks.cpp>
+	<Indication.cpp>
+	<pins.h>
+
+1516216594 b:\andrey\documents\github\autocar\tests\robocar - basecontroller\indication.cpp
+	<Arduino.h>
+	<Wire.h>
+	<LiquidCrystal_I2C.h>
+	<pins.h>
+
+1516216717 b:\andrey\documents\github\autocar\tests\robocar - basecontroller\manager.cpp
+	<RadioExtended.cpp>
+	<Joysticks.cpp>
+	<Indication.cpp>
+	<pins.h>
 
