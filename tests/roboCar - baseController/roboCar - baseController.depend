@@ -1,0 +1,63 @@
+# depslib dependency file v1.0
+315522000 source:b:\andrey\documents\github\autocar\tests\robocar - basecontroller\libraries\liquidcrystal_i2c\liquidcrystal_i2c.cpp
+	"LiquidCrystal_I2C.h"
+	<inttypes.h>
+	"Arduino.h"
+	"WProgram.h"
+	"Wire.h"
+
+315522000 b:\andrey\documents\github\autocar\tests\robocar - basecontroller\libraries\liquidcrystal_i2c\liquidcrystal_i2c.h
+	<inttypes.h>
+	"Print.h"
+	<Wire.h>
+
+1362986950 c:\program files (x86)\codeblocks arduino\arduino\hardware\arduino\cores\arduino\print.h
+	<inttypes.h>
+	<stdio.h>
+	"WString.h"
+	"Printable.h"
+
+1371033134 c:\program files (x86)\codeblocks arduino\arduino\hardware\arduino\cores\arduino\wstring.h
+	<stdlib.h>
+	<string.h>
+	<ctype.h>
+	<avr/pgmspace.h>
+
+1362986950 c:\program files (x86)\codeblocks arduino\arduino\hardware\arduino\cores\arduino\printable.h
+	<new.h>
+
+1362986950 c:\program files (x86)\codeblocks arduino\arduino\hardware\arduino\cores\arduino\new.h
+	<stdlib.h>
+
+1371033102 c:\program files (x86)\codeblocks arduino\arduino\hardware\arduino\cores\arduino\arduino.h
+	<stdlib.h>
+	<string.h>
+	<math.h>
+	<avr/pgmspace.h>
+	<avr/io.h>
+	<avr/interrupt.h>
+	"binary.h"
+	"WCharacter.h"
+	"WString.h"
+	"HardwareSerial.h"
+	"pins_arduino.h"
+
+1362986950 c:\program files (x86)\codeblocks arduino\arduino\hardware\arduino\cores\arduino\binary.h
+
+1362986950 c:\program files (x86)\codeblocks arduino\arduino\hardware\arduino\cores\arduino\wcharacter.h
+	<ctype.h>
+
+1362986950 c:\program files (x86)\codeblocks arduino\arduino\hardware\arduino\cores\arduino\hardwareserial.h
+	<inttypes.h>
+	"Stream.h"
+	"USBAPI.h"
+
+1371032830 c:\program files (x86)\codeblocks arduino\arduino\hardware\arduino\cores\arduino\stream.h
+	<inttypes.h>
+	"Print.h"
+
+1362986950 c:\program files (x86)\codeblocks arduino\arduino\hardware\arduino\cores\arduino\usbapi.h
+
+1362986950 c:\program files (x86)\codeblocks arduino\arduino\hardware\arduino\variants\standard\pins_arduino.h
+	<avr/pgmspace.h>
+

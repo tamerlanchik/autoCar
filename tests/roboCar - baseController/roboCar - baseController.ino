@@ -1,6 +1,6 @@
 #include <Arduino.h>
 #include <Wire.h>
-#include <LiquidCrystal_I2C.h>
+#include <libraries/LiquidCrystal_I2C/LiquidCrystal_I2C.h>
 class Joysticks{
 private:
     const byte motorJoys[2] = {2, 3};
@@ -73,7 +73,7 @@ public:
             lcd.print("|");
         }
         for(byte i=0; i<4; i++){
-            if((data[3]%pow(10, i+1))/pow(10, i)){
+            if((data[2]%pow(10, i+1))/pow(10, i)){
                 lcd.setCursor(12+i%2, i/2);
                 lcd.print("\xDB");
             }
@@ -81,9 +81,10 @@ public:
 
         //Sonar angle+value
         lcd.setCursor(0, 1);
-        lcd.print("S"); lcd.print(data[4]); lcd.print("°");
-        if(data[5]<0) lcd.print("-");
-        else          lcd.print(data[5]);
+        lcd.print("S"); lcd.print(data[3]); lcd.print("°");
+        if(data[4]<0) lcd.print("-");
+        else          lcd.print(data[4]);
+        return true;
     }
     void setMovingFlagLED(bool flag){
         digitalWrite(movingFlagLED, flag);
@@ -101,30 +102,26 @@ private:
     bool isMovingFlag;
     int sensorData[3];
     int exertData[3];
+    Indication indicator;
 public:
-    bool readRadio() {void}
-    bool readControl() {void}
-    bool setIndication() {void}
-    bool sendCommandRadio() {void}
-    bool sendCommandSerial() {void}
+    bool readRadio() {return 0;}
+    bool readControl() {return 0;}
+    bool setIndication() {
+        int indictionData[] = {123, 321, 1010, 130, 432};
+        indicator.updateLCD(indicationData, 5);
+    }
+
+    bool sendCommandRadio() {return 0;}
+    bool sendCommandSerial() {return 0;}
     void devSerialEvent() {void}
     void ascSensors() {void}
 };
+Manager manager;
 void setup()
 {
-	Serial.begin(9600);
-
-	// initialize the digital pin as an output.
-	// Pin 13 has an LED connected on most Arduino boards:
-	pinMode(13, OUTPUT);
+    manager.setIndication();
 }
 
 void loop()
 {
-	Serial.println("Hello world!");
-
-	delay(1000);              // wait for a second
-	digitalWrite(13, HIGH);   // set the LED on
-	delay(1000);              // wait for a second
-	digitalWrite(13, LOW);    // set the LED off
 }
