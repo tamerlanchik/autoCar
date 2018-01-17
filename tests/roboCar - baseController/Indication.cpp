@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include <Wire.h>
-#include <LiquidCrystal_I2C.h>
-#include <pins.h>
+#include <B:\\roboCar\libraries\LiquidCrystal_I2C\LiquidCrystal_I2C.h>
+#include <B:\\roboCar\pins.h>
 class Indication{
 private:
     //bool isMovingFlag;
@@ -12,12 +12,12 @@ public:
     Indication():lcd(0x27,16,2) {
       }
     void initLCD(){
-      uint8_t a[8] = {B00000, B11111, B11111, B11111, B11111, B11111, B11111, B00000};
-      uint8_t b[8] = {B00100, B01010, B01010, B00100, B00000, B00000, B00000, B00000};
       lcd.init();
       lcd.backlight();
-      lcd.createChar(1, a);
-      lcd.createChar(2, b);
+      uint8_t fillRect[8] = {B00000, B11111, B11111, B11111, B11111, B11111, B11111, B00000};
+      uint8_t degree[8] = {B00100, B01010, B01010, B00100, B00000, B00000, B00000, B00000};
+      lcd.createChar(1, fillRect);
+      lcd.createChar(2, degree);
     }
     void updateLCD(int data[], int len){
         lcd.clear();

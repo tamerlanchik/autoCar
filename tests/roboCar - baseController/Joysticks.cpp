@@ -1,5 +1,5 @@
 #include <Arduino.h>
-#include <pins.h>
+#include <B:\\roboCar\pins.h>
 class Joysticks{
 private:
     int preMotorsVals[2];
@@ -9,10 +9,18 @@ private:
 
 
 public:
+    Joysticks():preSonarAngle(0)
+    {
+        for(char i=0; i<2; i++){
+            preMotorsVals[i]=0;
+            motorJoysNeutral[i]=analogRead(motorJoys[i]);
+        }
+        sonarJoyNeutral=analogRead(sonarJoy);
+    }
     bool getMotorsJoys(int val[]) {
         bool isChanged=false;
         for(char i=0; i<2; i++){
-            val[i]=analogRead(motorJoys[i]);
+            val[i]=analogRead(motorJoys[i])-motorJoysNeutral[i];
             if(abs(val[i]-preMotorsVals[i])>epsM){
                 isChanged = true;
                 preMotorsVals[i] = val[i];
@@ -20,12 +28,12 @@ public:
         }
         return isChanged;
     }
-    bool getSonarJoy(int val){
+    bool getSonarJoy(int* val){
         bool isChanged=false;
-        val=analogRead(sonarJoy);
-        if(abs(val-preSonarAngle)>epsS){
+        *val=analogRead(sonarJoy)-sonarJoyNeutral;
+        if(abs(*val-preSonarAngle)>epsS){
             isChanged = true;
-            preSonarAngle = val;
+            preSonarAngle = *val;
         }
         return isChanged;
     }

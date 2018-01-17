@@ -1,6 +1,6 @@
-#include <nRF24L01.h>
-#include <SPI.h>
-#include <RF24.h>
+#include <B:\\roboCar\libraries\RF24\nRF24L01.h>
+#include <B:\\roboCar\libraries\SPI\SPI.h>
+#include <B:\\roboCar\libraries\RF24\RF24.h>
 class RadioExtended  : public RF24
 {
 public:
@@ -12,5 +12,17 @@ public:
         this->openReadingPipe(1,*adr1); // §à§ä§Ü§â§í§ä§î §Ü§Ñ§ß§Ñ§Ý §ß§Ñ §á§â§Ú§×§Þ
         this->openWritingPipe(*adr2);
         this->startListening();
+    }
+    void write(char data[], int size)
+    {
+        int i=0;
+        bool fl=0;
+        do{
+             this->stopListening();
+             fl=RF24::write(&data, size);
+             this->startListening();
+             if(!fl)
+              delay(1*random(1, 5));
+        }while((i++<10) && !fl);
     }
 };
