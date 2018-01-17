@@ -61,3 +61,18 @@
 1362986950 c:\program files (x86)\codeblocks arduino\arduino\hardware\arduino\variants\standard\pins_arduino.h
 	<avr/pgmspace.h>
 
+1516202114 source:b:\andrey\documents\github\autocar\tests\robocar - basecontroller\robocar - basecontroller.ino
+	<Arduino.h>
+	<LiquidCrystal_I2C.h>
+	<Wire.h>
+
+315522000 c:\program files (x86)\codeblocks arduino\arduino\libraries\liquidcrystal_i2c\liquidcrystal_i2c.h
+	<inttypes.h>
+	"Print.h"
+	<Wire.h>
+
+315522000 c:\program files (x86)\codeblocks arduino\arduino\hardware\arduino\libraries\liquidcrystal_i2c\liquidcrystal_i2c.h
+	<inttypes.h>
+	"Print.h"
+	<Wire.h>
+
