@@ -5,7 +5,7 @@
 extern Logger Log;
 Manager manager;
 int i=1;
-
+double time=0;
 void setup()
 {
   manager.init();
@@ -13,6 +13,10 @@ void setup()
 
 void loop()
 {
+  if(millis()-time > 1000){
+    manager.sendTest();
+    time=millis();
+  }
   if(manager.radioAvailable()){
     manager.readRadio();
   }
