@@ -12,7 +12,7 @@ void Indication::initLCD()
     lcd.createChar(2, degree);
 }
 
-int Indication::powd(int a, int b){
+int Indication::powd(int a, int b)const{
     int res=1;
     for(;b>0; b--)
         res*=a;

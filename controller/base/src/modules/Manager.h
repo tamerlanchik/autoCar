@@ -4,7 +4,7 @@
 #include "Joysticks.h"
 #include "Indication.h"
 #include "pins.h"
-//#include "Logger.h"
+#include "Logger.h"
 class Manager{
 private:
     int motorVals[2];
@@ -30,7 +30,7 @@ public:
     void sendTest();
     bool sendCommandRadio();
     bool sendCommandSerial();
-    void devSerialEvent();
+    bool devSerialEvent();
     void ascSensors(char);
 };
 #endif

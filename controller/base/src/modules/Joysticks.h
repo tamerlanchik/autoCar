@@ -2,6 +2,8 @@
 #define HEADERJOY
 #include <Arduino.h>
 #include "pins.h"
+#include "Logger.h"
+extern Logger Log;
 class Joysticks{
 private:
     int preMotorsVals[2];
@@ -12,7 +14,7 @@ public:
     Joysticks();
     bool getMotorsJoys(int[]);
     bool getSonarJoy(int*);
-    bool getSonarState(void);
-    bool getSignalState(void);
+    bool getSonarState(void) const;
+    bool getSignalState(void) const;
 };
 #endif

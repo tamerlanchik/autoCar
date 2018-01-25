@@ -9,6 +9,6 @@ const char scanningFlagLED = 6;
 const char epsM = 10;
 const char epsS = 3;
 const int serialRate = 9600;
-const int adr1=0x1234567891LL, adr2=0x1234567890LL;
+const uint8_t adr1[]="1PIPE", adr2[]="2PIPE";
 
 #endif

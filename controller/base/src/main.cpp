@@ -2,6 +2,7 @@
 #include "modules/Manager.h"
 #include "modules/pins.h"
 #include <TimerOne.h>
+extern Logger Log;
 Manager manager;
 int i=1;
 void sendTest(){

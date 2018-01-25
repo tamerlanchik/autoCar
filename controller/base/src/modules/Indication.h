@@ -5,7 +5,8 @@
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 #include "pins.h"
-
+#include "Logger.h"
+extern Logger Log;
 class Indication{
 private:
     //bool isMovingFlag;
@@ -14,7 +15,7 @@ private:
 public:
     Indication();
     void initLCD();
-    int powd(int ,int);
+    int powd(int ,int)const;
     void print(char [],int);
     void print(bool);
     void updateLCD(int[],int);

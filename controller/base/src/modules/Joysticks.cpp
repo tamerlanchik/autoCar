@@ -1,7 +1,7 @@
 #include "Joysticks.h"
 Joysticks::Joysticks():preSonarAngle(0)
 {
-  for(char i=0; i<2; i++){
+  for(int i=0; i<2; i++){
       preMotorsVals[i]=0;
       motorJoysNeutral[i]=analogRead(motorJoys[i]);
   }
@@ -9,7 +9,7 @@ Joysticks::Joysticks():preSonarAngle(0)
 }
 bool Joysticks::getMotorsJoys(int val[]) {
     bool isChanged=false;
-    for(char i=0; i<2; i++){
+    for(int i=0; i<2; i++){
         val[i]=analogRead(motorJoys[i])-motorJoysNeutral[i];
         if(abs(val[i]-preMotorsVals[i])>epsM){
             isChanged = true;
@@ -27,9 +27,9 @@ bool Joysticks::getSonarJoy(int* val){
     }
     return isChanged;
 }
-bool Joysticks::getSonarState(void){
+bool Joysticks::getSonarState(void) const{
     return digitalRead(scanBut);
 }
-bool Joysticks::getSignalState(void){
+bool Joysticks::getSignalState(void) const{
     return digitalRead(signalBut);
 }

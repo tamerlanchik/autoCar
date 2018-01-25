@@ -1,16 +1,21 @@
 #include "Manager.h"
-
+Logger Log(9600);
 Manager::Manager():radio(9, 10){}
 
 void Manager::init(){
       indicator.initLCD();
+      Log.d("Init LCD");
       radio.initRadio(adr1, adr2, RF24_1MBPS);
+      Log.d("Init Radio");
 
 }
 
 bool Manager::readRadio() {
     radio.read(&message, sizeof(message));
+    Log.d("Read msg");
     indicator.print(message, sizeof(message));
+    Log.d("Print msg");
+    return 1;
 }
 
 bool Manager::radioAvailable(){
@@ -24,6 +29,8 @@ bool Manager::setIndication(int i)
         int indicationData[] = {1230, 321, i, 130, 432};
         //indicator.initLCD();
         indicator.updateLCD(indicationData, 5);
+        Log.d("Update LCD");
+        return 1;
 }
 
 void Manager::sendTest()
@@ -31,17 +38,19 @@ void Manager::sendTest()
       message[0]=TEST1;
       message[1]=i++;
       indicator.print(radio.write(message, sizeof(message)));
+      Log.d("sendTest");
 }
 
 bool Manager::sendCommandRadio() {return 0;}
 
 bool Manager::sendCommandSerial() {return 0;}
 
-void Manager::devSerialEvent() {char a;}
+bool Manager::devSerialEvent() {return 0;}
 
 void Manager::ascSensors(char number=0)
 {
         message[0] = SENSOR_REQUEST;
         message[1] = number;
         radio.write(message, sizeof(message));
+        Log.d("Asc sensors");
 }
