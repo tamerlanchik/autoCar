@@ -1,6 +1,7 @@
 #if !defined(HEADERLOG)
 #define HEADERLOG
-#include <Arduino.h>
+#include "pins.h"
+//#include <Arduino.h>
 /*
 Log modes (Android Log):
 d: DEBUG
@@ -9,11 +10,10 @@ i: INFO
 
 
 */
-static const int serialRate = 9600;
-class Log
+class Logger
 {
 public:
-  Log();
+  Logger(int);
   void write(char[],char);
   void d(char[]);
   void e(char[]);

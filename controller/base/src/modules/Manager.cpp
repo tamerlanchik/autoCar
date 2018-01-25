@@ -4,7 +4,8 @@ Manager::Manager():radio(9, 10){}
 
 void Manager::init(){
       indicator.initLCD();
-      radio.initRadio(adr1, adr2, RF24_1MBPS);;
+      radio.initRadio(adr1, adr2, RF24_1MBPS);
+
 }
 
 bool Manager::readRadio() {
