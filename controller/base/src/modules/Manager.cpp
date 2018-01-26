@@ -2,7 +2,7 @@
 #include "Manager.h"
 extern Logger* Log;
 Manager::Manager():radio(9, 10, adr1, adr2, RF24_2MBPS, RF24_PA_MIN, true),
-                  indicator(),control(),i(0),time2(0){
+                  indicator(),control(),i(0),time2(0),timeCheckJoys(0){
   Log->d("Init Manager");
   // * For use with setPALevel()
   //enum { RF24_PA_MIN = 0,RF24_PA_LOW, RF24_PA_HIGH, RF24_PA_MAX, RF24_PA_ERROR } rf24_pa_dbm_e ;
@@ -39,7 +39,7 @@ bool Manager::makeRadioConnection()
 }
 bool Manager::readRadio() {
   Log->d("readRadio()");
-    radio.read(&message, sizeof(message));
+    radio.read(&message, 6);
     Log->d("Read msg");
     indicator.print(message[1]);
     Log->d("Print msg");
@@ -66,7 +66,7 @@ void Manager::sendTest()
       message[0]=TEST1;
       message[1]=i++;
       //indicator.print(radio.write(&message, sizeof(message)));
-      radio.write(&message, sizeof(message));
+      radio.write(&message, 6);
       Log->d("sendTest");
 }
 
@@ -75,7 +75,12 @@ bool Manager::sendCommandRadio() {return 0;}
 bool Manager::sendCommandSerial() {return 0;}
 
 bool Manager::devSerialEvent() {return 0;}
-
+void Manager::ascControl(){
+  //control.getSonarJoy();
+  //control.getMotorsJoys();
+  control.getSonarState();
+  control.getSignalState();
+}
 void Manager::ascSensors(char number=0)
 {
         message[0] = SENSOR_REQUEST;

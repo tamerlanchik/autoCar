@@ -15,12 +15,12 @@ private:
     bool isMovingFlag;
     int sensorData[3];
     int urgentData[3];
-    char message[3];
+    int message[3];
     RadioExtended radio;
     Indication indicator;
     Joysticks control;
     char i;
-    long int time2;
+    long int time2, timeCheckJoys;
     enum messageCodes {MOTOR_COMMAND, SENSOR_REQUEST, ACCOUNT_REQUEST, TEST1};
 public:
     Manager();
@@ -34,6 +34,7 @@ public:
     bool sendCommandRadio();
     bool sendCommandSerial();
     bool devSerialEvent();
+    void ascControl();
     void ascSensors(char);
     void printLCD(const char[]);
 };

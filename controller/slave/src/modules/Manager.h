@@ -13,7 +13,7 @@ private:
     bool isMovingFlag;
     int sensorData[3];
     int urgentData[3];
-    byte message[3];
+    int message[3];
     RadioExtended radio;
     int i=0;
     enum messageCodes {MOTOR_COMMAND, SENSOR_REQUEST, ACCOUNT_REQUEST, TEST1};

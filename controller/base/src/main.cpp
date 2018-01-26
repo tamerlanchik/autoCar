@@ -18,7 +18,7 @@ void setup()
 
 void loop()
 {
-  manager->makeRadioConnection();
+  //manager->makeRadioConnection();
   if((millis()-time) > 500){
     Log->d("sendTest time");
     manager->sendTest();

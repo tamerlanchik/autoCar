@@ -17,7 +17,7 @@ public:
     int powd(int ,int)const;
     void print(const char []);
     void print(char);
-    void print(unsigned int);
+    void print(int);
     void print(bool);
     void updateLCD(int[],int);
     void setMovingFlagLED(bool)const;

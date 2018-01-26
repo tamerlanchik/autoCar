@@ -21,6 +21,6 @@ void loop()
   if(manager->radioAvailable())
   {
     Log->d("Radio available");
-    manager->writeRadio(manager->readRadio()*2);
+    manager->writeRadio(manager->readRadio()*1000);
   }
 }
