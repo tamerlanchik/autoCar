@@ -58,12 +58,12 @@ void Indication::updateLCD(int data[], int len){
     Log->d("LCD updated");
 }
 
-void Indication::setMovingFlagLED(bool flag){
+void Indication::setMovingFlagLED(bool flag)const{
     digitalWrite(movingFlagLED, flag);
     Log->d("sMFL()");
 }
 
-void Indication::setScanningFlagLED(bool flag){
+void Indication::setScanningFlagLED(bool flag)const{
     digitalWrite(scanningFlagLED, flag);
     Log->d("sSFL()");
 }

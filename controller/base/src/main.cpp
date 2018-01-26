@@ -10,7 +10,7 @@ Manager* manager;
 void setup()
 {
   Log = new Logger();
-  Log->i("Setup");
+  Log->d("Setup");
   manager=new Manager();
   manager->printLCD("Setup");
 }
@@ -18,6 +18,7 @@ void setup()
 void loop()
 {
   if(millis()-time > 1000){
+    Log->d("sendTest time");
     manager->sendTest();
     time=millis();
   }

@@ -13,11 +13,12 @@ bool Manager::readRadio() {
     return 1;
 }
 
-bool Manager::radioAvailable(){
+bool Manager::radioAvailable()const{
+  Log->d("Radio available");
     return radio.available();
 }
 
-bool Manager::readControl() {return 0;}
+bool Manager::readControl()const {return 0;}
 
 bool Manager::setIndication(int i)
 {

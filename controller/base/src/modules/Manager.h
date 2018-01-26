@@ -24,8 +24,8 @@ private:
 public:
     Manager();
     bool readRadio();
-    bool radioAvailable();
-    bool readControl();
+    bool radioAvailable()const;
+    bool readControl()const;
     bool setIndication(int);
     void sendTest();
     bool sendCommandRadio();

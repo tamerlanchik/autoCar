@@ -18,8 +18,8 @@ public:
     void print(const char []);
     void print(bool);
     void updateLCD(int[],int);
-    void setMovingFlagLED(bool);
-    void setScanningFlagLED(bool);
+    void setMovingFlagLED(bool)const;
+    void setScanningFlagLED(bool)const;
 };
 
 #endif

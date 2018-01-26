@@ -5,7 +5,7 @@
 class RadioExtended : public RF24
 {
 public:
-    RadioExtended(int,int,const uint8_t*,const uint8_t*,rf24_datarate_e r);
-    bool writee(const char[],int);
+    RadioExtended(int,int,const uint8_t*,const uint8_t*,rf24_datarate_e r,bool);
+    bool write(const char[],int);
 };
 #endif

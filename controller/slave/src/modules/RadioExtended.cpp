@@ -1,11 +1,18 @@
 //#include <nRF24L01.h>
 #include "RadioExtended.h"
 extern Logger* Log;
-RadioExtended::RadioExtended(int  a, int b, const uint8_t*  adr1, const uint8_t* adr2, rf24_datarate_e r):RF24(a, b){
+RadioExtended::RadioExtended(int  a, int b, const uint8_t*  adr1, const uint8_t* adr2, rf24_datarate_e r, bool role):RF24(a, b){
   this->begin();
   this->setDataRate(r);
-  this->openReadingPipe(1,*adr2);
-  this->openWritingPipe(*adr1);
+  //role: 1-base, 0-slave
+  if(role){
+    this->openReadingPipe(1,*adr2);
+    this->openWritingPipe(*adr1);
+  }
+  else{
+    this->openReadingPipe(1,*adr1);
+    this->openWritingPipe(*adr2);
+  }
   this->startListening();
   delay(300);
   Log->d("Radio inited");
