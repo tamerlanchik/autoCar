@@ -2,7 +2,7 @@
 #include "Manager.h"
 //Logger Log(28800);
 extern Logger* Log;
-Manager::Manager():radio(9, 10, adr1, adr2, RF24_1MBPS, false){
+Manager::Manager():radio(9, 10, adr1, adr2, RF24_2MBPS, RF24_PA_MIN, false){
   Log->d("Manager inited");
   //Log->d("Init manager");
   //radio.initRadio(adr1, adr2, RF24_1MBPS);
@@ -13,6 +13,11 @@ int Manager::readRadio() {
     Log->d("Read Radio");
     radio.read(&message, sizeof(message));
     Log->d("Read msg");
+    if(message[0]=='?')
+    {
+      message[0]='!';
+      radio.write(&message, sizeof(message));
+    }
     //Log->d(message[0]);
     return message[1];
 }

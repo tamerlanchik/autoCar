@@ -24,17 +24,17 @@ void Indication::print(const char message[]){
 }
 void Indication::print(char message){
   lcd.clear();
-  lcd.print(message);
+  lcd.print(static_cast<int>(message));
   Log->d("Print LCD success");
 }
-void Indication::print(int message){
+void Indication::print(unsigned int message){
   lcd.clear();
   lcd.print(message);
   Log->d("Print LCD success");
 }
 void Indication::print(bool a){
   lcd.clear();
-  lcd.print(a);
+  //lcd.print(a);
 }
 
 void Indication::updateLCD(int data[], int len){

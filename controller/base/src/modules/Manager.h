@@ -15,14 +15,17 @@ private:
     bool isMovingFlag;
     int sensorData[3];
     int urgentData[3];
-    int message[3];
+    char message[3];
     RadioExtended radio;
     Indication indicator;
     Joysticks control;
     char i;
+    long int time2;
     enum messageCodes {MOTOR_COMMAND, SENSOR_REQUEST, ACCOUNT_REQUEST, TEST1};
 public:
     Manager();
+    bool checkRadioConnection(int,int);
+    bool makeRadioConnection();
     bool readRadio();
     bool radioAvailable();
     bool readControl()const;
