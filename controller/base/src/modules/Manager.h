@@ -16,9 +16,9 @@ private:
     int sensorData[3];
     int urgentData[3];
     char message[3];
+    RadioExtended radio;
     Indication indicator;
     Joysticks control;
-    RadioExtended radio;
     int i=0;
     enum messageCodes {MOTOR_COMMAND, SENSOR_REQUEST, ACCOUNT_REQUEST, TEST1};
 public:
@@ -32,5 +32,6 @@ public:
     bool sendCommandSerial();
     bool devSerialEvent();
     void ascSensors(char);
+    void printLCD(const char[]);
 };
 #endif

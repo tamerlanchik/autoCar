@@ -1,15 +1,13 @@
 #include "Indication.h"
 
-Indication::Indication():lcd(0x27,16,2) {}
-
-void Indication::initLCD()
-{
-    lcd.init();
-    lcd.backlight();
-    uint8_t fillRect[8] = {B00000, B11111, B11111, B11111, B11111, B11111, B11111, B00000};
-    uint8_t degree[8] = {B00100, B01010, B01010, B00100, B00000, B00000, B00000, B00000};
-    lcd.createChar(1, fillRect);
-    lcd.createChar(2, degree);
+Indication::Indication():lcd(0x27,16,2) {
+  lcd.init();
+  lcd.backlight();
+  uint8_t fillRect[8] = {B00000, B11111, B11111, B11111, B11111, B11111, B11111, B00000};
+  uint8_t degree[8] = {B00100, B01010, B01010, B00100, B00000, B00000, B00000, B00000};
+  lcd.createChar(1, fillRect);
+  lcd.createChar(2, degree);
+  Log->d("Init LCD");
 }
 
 int Indication::powd(int a, int b)const{
@@ -19,16 +17,11 @@ int Indication::powd(int a, int b)const{
     return res;
 }
 
-void Indication::print(char message[], int size){
+void Indication::print(const char message[]){
   lcd.clear();
-  if(size>1){
-    lcd.print(message[1]);
-  }
-  else{
-    lcd.print("Error in Indicate.print()");
-  }
+  lcd.print(message);
+  Log->d("Print LCD success");
 }
-
 void Indication::print(bool a){
   lcd.clear();
   lcd.print(a);
@@ -62,12 +55,15 @@ void Indication::updateLCD(int data[], int len){
     lcd.print("S"); lcd.setCursor(2, 1);lcd.print(data[3]); lcd.write(2);
     if(data[4]<0) lcd.print("-");
     else          lcd.print(data[4]);
+    Log->d("LCD updated");
 }
 
 void Indication::setMovingFlagLED(bool flag){
     digitalWrite(movingFlagLED, flag);
+    Log->d("sMFL()");
 }
 
 void Indication::setScanningFlagLED(bool flag){
     digitalWrite(scanningFlagLED, flag);
+    Log->d("sSFL()");
 }

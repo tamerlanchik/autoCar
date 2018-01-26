@@ -12,6 +12,7 @@ void setup()
   Log = new Logger();
   Log->i("Setup");
   manager=new Manager();
+  manager->printLCD("Setup");
 }
 
 void loop()

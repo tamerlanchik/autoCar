@@ -14,9 +14,8 @@ private:
     LiquidCrystal_I2C lcd;
 public:
     Indication();
-    void initLCD();
     int powd(int ,int)const;
-    void print(char [],int);
+    void print(const char []);
     void print(bool);
     void updateLCD(int[],int);
     void setMovingFlagLED(bool);
