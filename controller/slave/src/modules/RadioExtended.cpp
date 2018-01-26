@@ -17,22 +17,25 @@ RadioExtended::RadioExtended(int  a, int b, const uint8_t*  adr1, const uint8_t*
   delay(300);
   Log->d("Radio inited");
 }
-bool RadioExtended::writee(const char data[], int size)
+bool RadioExtended::write(void* data, int size)
 {
     int i=0;
-    bool fl=0;
+    bool fl=1;
     Log->d("Start sending");
     do{
        this->stopListening();
        Log->d("Stop litening");
-       fl=this->write(&data, size);
+       fl=RF24::write(data, size);
        Log->e("Try to wrote");
        this->startListening();
        if(!fl){
         delay(1*random(1, 5));
         Log->e("Cant send. Retry..");
       }
+      else{
+        Log->d("Success send");
+      }
     }while((i++<10) && !fl);
-    Log->e("Cant send at all");
+    Log->e("Send tries end");
     return fl;
 }

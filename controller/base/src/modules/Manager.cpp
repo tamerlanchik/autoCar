@@ -1,28 +1,30 @@
 //base
 #include "Manager.h"
 extern Logger* Log;
-Manager::Manager():radio(9, 10, adr1, adr2, RF24_1MBPS, true),indicator(),control(){
+Manager::Manager():radio(9, 10, adr1, adr2, RF24_1MBPS, true),
+                  indicator(),control(),i(0){
   Log->d("Init Manager");
 }
 
 bool Manager::readRadio() {
+  Log->d("readRadio()");
     radio.read(&message, sizeof(message));
     Log->d("Read msg");
-    indicator.print(message);
+    indicator.print(message[1]);
     Log->d("Print msg");
     return 1;
 }
 
-bool Manager::radioAvailable()const{
-  Log->d("Radio available");
+bool Manager::radioAvailable(){
+    //Log->d("Radio available");
     return radio.available();
 }
 
 bool Manager::readControl()const {return 0;}
 
-bool Manager::setIndication(int i)
+bool Manager::setIndication(int k)
 {
-        int indicationData[] = {1230, 321, i, 130, 432};
+        int indicationData[] = {1230, 321, k, 130, 432};
         indicator.updateLCD(indicationData, 5);
         Log->d("Update LCD");
         return 1;
@@ -32,7 +34,7 @@ void Manager::sendTest()
 {
       message[0]=TEST1;
       message[1]=i++;
-      indicator.print(radio.write(message, sizeof(message)));
+      indicator.print(radio.write(&message, sizeof(message)));
       Log->d("sendTest");
 }
 

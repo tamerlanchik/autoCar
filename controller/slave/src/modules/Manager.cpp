@@ -11,9 +11,9 @@ Manager::Manager():radio(9, 10, adr1, adr2, RF24_1MBPS, false){
 
 int Manager::readRadio() {
     Log->d("Read Radio");
-    radio.read(message, sizeof(message));
+    radio.read(&message, sizeof(message));
     Log->d("Read msg");
-    Log->d(message);
+    //Log->d(message[0]);
     return message[1];
 }
 
@@ -23,7 +23,7 @@ bool Manager::radioAvailable(){
 void Manager::writeRadio(int dat){
   Log->d("WriteRadio");
   message[1]=dat;
-  radio.writee(message, sizeof(message));
+  radio.write(&message, sizeof(message));
 }
 bool Manager::readControl() {return 0;}
 

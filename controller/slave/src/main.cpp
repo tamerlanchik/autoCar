@@ -11,7 +11,7 @@ void setup()
   Log = new Logger();
   //Serial.begin(115200);
   //delay(400);
-  Log->d("Setup");
+  Log->d("CAR");
   manager = new Manager();
   //manager->init();
 }

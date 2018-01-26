@@ -22,6 +22,16 @@ void Indication::print(const char message[]){
   lcd.print(message);
   Log->d("Print LCD success");
 }
+void Indication::print(char message){
+  lcd.clear();
+  lcd.print(message);
+  Log->d("Print LCD success");
+}
+void Indication::print(int message){
+  lcd.clear();
+  lcd.print(message);
+  Log->d("Print LCD success");
+}
 void Indication::print(bool a){
   lcd.clear();
   lcd.print(a);

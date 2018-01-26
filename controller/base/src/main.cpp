@@ -10,19 +10,21 @@ Manager* manager;
 void setup()
 {
   Log = new Logger();
-  Log->d("Setup");
+  Log->d("BASE");
   manager=new Manager();
   manager->printLCD("Setup");
 }
 
 void loop()
 {
-  if(millis()-time > 1000){
+  if((millis()-time) > 300){
     Log->d("sendTest time");
     manager->sendTest();
     time=millis();
   }
   if(manager->radioAvailable()){
+    Log->d("Radio available");
     manager->readRadio();
+    Log->d("readed radio");
   }
 }
