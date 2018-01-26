@@ -2,7 +2,7 @@
 #include "Manager.h"
 //Logger Log(28800);
 extern Logger* Log;
-Manager::Manager():radio(9, 10, adr1, adr2, RF24_1MBPS){
+Manager::Manager():radio(9, 10, adr1, adr2, RF24_1MBPS, false){
   Log->d("Manager inited");
   //Log->d("Init manager");
   //radio.initRadio(adr1, adr2, RF24_1MBPS);

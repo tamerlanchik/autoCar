@@ -1,7 +1,7 @@
 //base
 #include "Manager.h"
 extern Logger* Log;
-Manager::Manager():radio(9, 10, adr1, adr2, RF24_1MBPS),indicator(),control(){
+Manager::Manager():radio(9, 10, adr1, adr2, RF24_1MBPS, true),indicator(),control(){
   Log->d("Init Manager");
 }
 
