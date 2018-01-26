@@ -1,3 +1,4 @@
+//slave
 #include <Arduino.h>
 #include "modules/Manager.h"
 #include "modules/pins.h"

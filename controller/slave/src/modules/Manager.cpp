@@ -1,3 +1,4 @@
+//slave
 #include "Manager.h"
 //Logger Log(28800);
 extern Logger* Log;

@@ -1,3 +1,4 @@
+//slave
 #if !defined(HEADCOM)
 #define HEADCOM
 #include "RadioExtended.h"
