@@ -1,3 +1,4 @@
+//base
 #if !defined(HEADCOM)
 #define HEADCOM
 #include "RadioExtended.h"
@@ -22,7 +23,6 @@ private:
     enum messageCodes {MOTOR_COMMAND, SENSOR_REQUEST, ACCOUNT_REQUEST, TEST1};
 public:
     Manager();
-    void init();
     bool readRadio();
     bool radioAvailable();
     bool readControl();

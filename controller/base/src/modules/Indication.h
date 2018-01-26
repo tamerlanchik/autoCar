@@ -6,7 +6,7 @@
 #include <LiquidCrystal_I2C.h>
 #include "pins.h"
 #include "Logger.h"
-extern Logger Log;
+extern Logger* Log;
 class Indication{
 private:
     //bool isMovingFlag;

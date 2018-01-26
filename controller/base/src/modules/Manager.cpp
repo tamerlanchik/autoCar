@@ -1,19 +1,10 @@
+//base
 #include "Manager.h"
 extern Logger* Log;
-Manager::Manager():radio(9, 10){
+Manager::Manager():radio(9, 10, adr1, adr2, RF24_1MBPS){
   Log->d("Manager init");
   indicator.initLCD();
   Log->d("Init LCD");
-  radio.initRadio(adr1, adr2, RF24_1MBPS);
-  Log->d("Init Radio");
-}
-
-void Manager::init(){
-      indicator.initLCD();
-      Log->d("Init LCD");
-      radio.initRadio(adr1, adr2, RF24_1MBPS);
-      Log->d("Init Radio");
-
 }
 
 bool Manager::readRadio() {

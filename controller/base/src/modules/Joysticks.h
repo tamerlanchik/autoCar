@@ -3,7 +3,7 @@
 #include <Arduino.h>
 #include "pins.h"
 #include "Logger.h"
-extern Logger Log;
+extern Logger* Log;
 class Joysticks{
 private:
     int preMotorsVals[2];
