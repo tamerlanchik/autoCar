@@ -13,7 +13,7 @@ i: INFO
 class Logger
 {
 public:
-  Logger(int);
+  Logger();
   void initSerial(int);
   void write(const char[],char)const;
   void d(const char[])const;
