@@ -1,6 +1,13 @@
 #include "Logger.h"
-Logger::Logger(int sRate){
-  Serial.begin(sRate);
+Logger::Logger(){
+  Serial.begin(115200);
+  delay(200);
+  Serial.println("DEBUG: Init serial");
+}
+void initSerial(int speed){
+  Serial.begin(speed);
+  delay(400);
+  Serial.println("<font color='#f00'>Init serial</font>");
 }
 void Logger::write(const char mess[], const char mode='i')const
 {

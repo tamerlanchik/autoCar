@@ -10,16 +10,16 @@ void setup()
   Log = new Logger();
   //Serial.begin(115200);
   //delay(400);
-  Log->i("Setup");
+  Log->d("Setup");
   manager = new Manager();
-  manager->init();
+  //manager->init();
 }
 
 void loop()
 {
   if(manager->radioAvailable())
   {
-    Log->i("Radio available");
+    Log->d("Radio available");
     manager->writeRadio(manager->readRadio()*2);
   }
 }

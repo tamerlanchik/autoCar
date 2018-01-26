@@ -18,7 +18,6 @@ private:
     enum messageCodes {MOTOR_COMMAND, SENSOR_REQUEST, ACCOUNT_REQUEST, TEST1};
 public:
     Manager();
-    void init();
     int readRadio();
     void writeRadio(int);
     bool radioAvailable();
