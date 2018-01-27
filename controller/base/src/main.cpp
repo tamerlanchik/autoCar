@@ -19,7 +19,7 @@ void setup()
 void loop()
 {
   //manager->makeRadioConnection();
-  if((millis()-time) > 500){
+  /*if((millis()-time) > 500){
     Log->d("sendTest time");
     manager->sendTest();
     time=millis();
@@ -28,5 +28,7 @@ void loop()
     Log->d("Radio available");
     manager->readRadio();
     Log->d("readed radio");
-  }
+  }*/
+  manager->ascControl();
+  //delay(100);
 }

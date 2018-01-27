@@ -9,17 +9,20 @@ Manager::Manager():radio(9, 10, adr1, adr2, RF24_2MBPS, RF24_PA_MIN, false){
   //Log->d("Init Radio");
 }
 
-int Manager::readRadio() {
+Message_template Manager::readRadio() {
     Log->d("Read Radio");
-    radio.read(&message, 6);
-    Log->d("Read msg");
-    if(message[0]=='?')
+    radio.read(&mess, sizeof(mess));
+    /*if(mess.mode==TEST1)
     {
-      message[0]='!';
-      radio.write(&message, 6);
+      mess.data[0]='!';
+      radio.write(&mess, sizeof(mess));
+    }*/
+    Log->d("Message get:");
+    Log->write(mess.mode, 'i');
+    for(int i=0; i<3; i++){
+      Log->write(mess.data[i], 'i');
     }
-    //Log->d(message[0]);
-    return message[1];
+    return mess;
 }
 
 bool Manager::radioAvailable(){
@@ -29,6 +32,12 @@ void Manager::writeRadio(int dat){
   Log->d("WriteRadio");
   message[1]=dat;
   radio.write(&message, 6);
+}
+void Manager::writeRadio(Message_template m)
+{
+  Log->d("WriteRadio()");
+  mess=m;
+  radio.write(&mess, sizeof(mess));
 }
 bool Manager::readControl() {return 0;}
 

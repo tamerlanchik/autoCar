@@ -3,17 +3,14 @@
 #include "modules/Manager.h"
 #include "modules/pins.h"
 #include "modules/Logger.h"
-//int speed = 115200;
 Logger* Log;
 Manager* manager;
+Message_template messag;
 void setup()
 {
   Log = new Logger();
-  //Serial.begin(115200);
-  //delay(400);
   Log->d("CAR");
   manager = new Manager();
-  //manager->init();
 }
 
 void loop()
@@ -21,6 +18,8 @@ void loop()
   if(manager->radioAvailable())
   {
     Log->d("Radio available");
-    manager->writeRadio(manager->readRadio()*1000);
+    messag=manager->readRadio();
+    messag.data[0]*=1000;
+    manager->writeRadio(messag);
   }
 }

@@ -27,10 +27,17 @@ void Indication::print(char message){
   lcd.print(static_cast<int>(message));
   Log->d("Print LCD success");
 }
-void Indication::print(int message){
-  lcd.clear();
+void Indication::print(int message, int posx=0, int posy=0, bool isClear=1){
+  if(isClear) {lcd.clear();}
+  lcd.setCursor(posx, posy);
   lcd.print(message);
   Log->d("Print LCD success");
+}
+void Indication::print(int data[], int size){
+  lcd.clear();
+  lcd.print(data[0]);
+  lcd.setCursor(0, 1);
+  lcd.print(data[1]);
 }
 void Indication::print(bool a){
   lcd.clear();
@@ -38,34 +45,38 @@ void Indication::print(bool a){
 }
 
 void Indication::updateLCD(int data[], int len){
-    lcd.clear();
-    //Motors values
-    lcd.setCursor(0, 0);
-    lcd.print("M");
-    lcd.setCursor(2, 0);
-    lcd.print(data[0]);
-    lcd.setCursor(5, 0);
-    lcd.print("|");
-    lcd.print(data[1]);
-    //Borders values
-    lcd.setCursor(11, 0);
-    lcd.print("B");
-    for(char i=0; i<4; i++){
-        lcd.setCursor(12+(i%2)*3, i/2);
-        lcd.print("|");
+    if(millis()-lcdLatestUpd>100){
+      lcd.clear();
+      //Motors values
+      lcd.setCursor(0, 0);
+      lcd.print("M");
+      lcd.setCursor(2, 0);
+      lcd.print(data[0]);
+      lcd.setCursor(5, 0);
+      lcd.print("|");
+      lcd.print(data[1]);
+      //Borders values
+      lcd.setCursor(11, 0);
+      lcd.print("B");
+      for(char i=0; i<4; i++){
+          lcd.setCursor(12+(i%2)*3, i/2);
+          lcd.print("|");
+      }
+      for(int i=0; i<4; i++){
+          if( (data[2] % (int)powd(10, i+1) ) / (int)powd(10, i)){
+              lcd.setCursor(13+i%2, i/2);
+              lcd.write(1);
+          }
+      }
+      //Sonar angle+value
+      lcd.setCursor(0, 1);
+      lcd.print("S"); lcd.setCursor(2, 1);lcd.print(data[3]); lcd.write(2);
+      lcd.setCursor(6, 1);
+      if(data[4]<0) lcd.print("-");
+      else          lcd.print(data[4]);
+      Log->d("LCD updated");
+      lcdLatestUpd=millis();
     }
-    for(int i=0; i<4; i++){
-        if( (data[2] % (int)powd(10, i+1) ) / (int)powd(10, i)){
-            lcd.setCursor(13+i%2, i/2);
-            lcd.write(1);
-        }
-    }
-    //Sonar angle+value
-    lcd.setCursor(0, 1);
-    lcd.print("S"); lcd.setCursor(2, 1);lcd.print(data[3]); lcd.write(2);
-    if(data[4]<0) lcd.print("-");
-    else          lcd.print(data[4]);
-    Log->d("LCD updated");
 }
 
 void Indication::setMovingFlagLED(bool flag)const{

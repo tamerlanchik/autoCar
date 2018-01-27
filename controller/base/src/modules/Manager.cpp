@@ -37,15 +37,30 @@ bool Manager::makeRadioConnection()
   }
   return true;
 }
-bool Manager::readRadio() {
+/*bool Manager::readRadio() {
   Log->d("readRadio()");
     radio.read(&message, 6);
     Log->d("Read msg");
     indicator.print(message[1]);
     Log->d("Print msg");
     return 1;
+}*/
+Message_template Manager::readRadio() {
+    Log->d("Read Radio");
+    radio.read(&mess, sizeof(mess));
+    Log->d("Message get:");
+    Log->write(mess.mode, 'i');
+    for(int i=0; i<3; i++){
+      Log->write(mess.data[i], 'i');
+    }
+    return mess;
 }
-
+void Manager::writeRadio(Message_template m)
+{
+  Log->d("WriteRadio()");
+  mess=m;
+  radio.write(&mess, sizeof(mess));
+}
 bool Manager::radioAvailable(){
     //Log->d("Radio available");
     return radio.available();
@@ -55,18 +70,18 @@ bool Manager::readControl()const {return 0;}
 
 bool Manager::setIndication(int k)
 {
-        int indicationData[] = {1230, 321, k, 130, 432};
-        indicator.updateLCD(indicationData, 5);
+        int indicationDatai[] = {1230, 321, k, 130, 432};
+        indicator.updateLCD(indicationDatai, 5);
         Log->d("Update LCD");
         return 1;
 }
 
 void Manager::sendTest()
 {
-      message[0]=TEST1;
-      message[1]=i++;
+      mess.mode=TEST1;
+      mess.data[0]=i++;
       //indicator.print(radio.write(&message, sizeof(message)));
-      radio.write(&message, 6);
+      radio.write(&mess, sizeof(mess));
       Log->d("sendTest");
 }
 
@@ -76,10 +91,21 @@ bool Manager::sendCommandSerial() {return 0;}
 
 bool Manager::devSerialEvent() {return 0;}
 void Manager::ascControl(){
-  //control.getSonarJoy();
-  //control.getMotorsJoys();
-  control.getSonarState();
-  control.getSignalState();
+  if(control.getSonarJoy(&sonarAngle))
+  {
+    //indicator.print(sonarAngle;, 10, 0, false);
+    indicationData[3]=sonarAngle;
+  }
+  if(control.getMotorsJoys(motorVals)){
+    //indicator.print(motorVals, 2);
+    indicationData[0]=motorVals[0];
+    indicationData[1]=motorVals[1];
+  }
+  indicationData[2]=1010;
+  indicationData[4]=173;
+  indicator.setMovingFlagLED(control.getSignalState());
+  indicator.setScanningFlagLED(control.getSonarState());
+  indicator.updateLCD(indicationData, 5);
 }
 void Manager::ascSensors(char number=0)
 {

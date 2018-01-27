@@ -19,14 +19,18 @@ private:
     RadioExtended radio;
     Indication indicator;
     Joysticks control;
-    char i;
+    Message_template mess;
+    int indicationData[];
+    int i;
     long int time2, timeCheckJoys;
-    enum messageCodes {MOTOR_COMMAND, SENSOR_REQUEST, ACCOUNT_REQUEST, TEST1};
+
 public:
     Manager();
     bool checkRadioConnection(int,int);
     bool makeRadioConnection();
-    bool readRadio();
+    //bool readRadio();
+    Message_template readRadio();
+    void writeRadio(Message_template);
     bool radioAvailable();
     bool readControl()const;
     bool setIndication(int);

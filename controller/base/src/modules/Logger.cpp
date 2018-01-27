@@ -9,7 +9,7 @@ void initSerial(int speed){
   delay(400);
   Serial.println("<font color='#f00'>Init serial</font>");
 }
-void Logger::write(const char mess[], const char mode='i')const
+void Logger::write(const char mess[], char mode='i')const
 {
   switch(mode)
   {
@@ -19,6 +19,14 @@ void Logger::write(const char mess[], const char mode='i')const
     default: break;
   }
   Serial.println(mess);
+}
+void Logger::write(int&  mess, char mode='i')const
+{
+  Serial.println(mess);
+}
+void Logger::write(char& mess, char mode='i')const
+{
+  Serial.println(int(mess));
 }
 void Logger::d(const char mess[])const{
   write(mess, 'd');

@@ -14,13 +14,14 @@ private:
     int sensorData[3];
     int urgentData[3];
     int message[3];
+    Message_template mess;
     RadioExtended radio;
     int i=0;
-    enum messageCodes {MOTOR_COMMAND, SENSOR_REQUEST, ACCOUNT_REQUEST, TEST1};
 public:
     Manager();
-    int readRadio();
+    Message_template readRadio();
     void writeRadio(int);
+    void writeRadio(Message_template);
     bool radioAvailable();
     bool readControl();
     bool setIndication(int);
