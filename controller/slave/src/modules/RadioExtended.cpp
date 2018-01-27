@@ -27,23 +27,20 @@ RadioExtended::RadioExtended(int  a, int b, const uint8_t*  adr1,
 bool RadioExtended::write(void* data, int size)
 {
     int i=0;
-    bool fl=1;
+    bool fl;
     Log->d("Start sending");
     do{
        this->stopListening();
-       Log->d("Stop litening");
        fl=RF24::write(data, size);
-       Log->e("Try to wrote");
        this->startListening();
-       if(!fl){
-        delay(1*random(1, 5));
-        Log->e("Cant send. Retry..");
-      }
-      else{
-        Log->d("Success send");
-      }
+       if(!fl) delay(1*random(1, 5));
     }while((i++<10) && !fl);
-    Log->e("Send tries end");
+    if(!fl){
+      Log->e("Radio: Cant send");
+    }
+    else{
+      Log->d("Success send\n");
+    }
     return fl;
     //this->stopListening();
     //RF24::write(data, size);
