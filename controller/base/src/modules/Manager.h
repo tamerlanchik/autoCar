@@ -20,7 +20,7 @@ private:
     Indication indicator;
     Joysticks control;
     Message_template mess;
-    int indicationData[];
+    int indicationData[7];
     int i;
     long int time2, timeCheckJoys;
 

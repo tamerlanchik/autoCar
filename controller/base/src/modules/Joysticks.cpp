@@ -18,7 +18,7 @@ bool Joysticks::getMotorsJoys(int val[]) {
             preMotorsVals[i] = val[i];
         }
     }
-    Log->d("gMJ()");
+    //Log->d("gMJ()");
     return isChanged;
 }
 bool Joysticks::getSonarJoy(int* val){
@@ -29,14 +29,14 @@ bool Joysticks::getSonarJoy(int* val){
         isChanged = true;
         preSonarAngle = *val;
     }
-    Log->d("gSJ()");
+    //Log->d("gSJ()");
     return isChanged;
 }
 bool Joysticks::getSonarState(void) const{
-    Log->d("gSoS()");
+    //Log->d("gSoS()");
     return !digitalRead(scanBut); //button is 0 when pressed
 }
 bool Joysticks::getSignalState(void) const{
-  Log->d("gSiS()");
+  //Log->d("gSiS()");
     return !digitalRead(signalBut); //button is 0 when pressed
 }

@@ -3,6 +3,10 @@
 extern Logger* Log;
 Manager::Manager():radio(9, 10, adr1, adr2, RF24_2MBPS, RF24_PA_MIN, true),
                   indicator(),control(),i(0),time2(0),timeCheckJoys(0){
+  for(int i=0; i<7; i++)
+  {
+    indicationData[i]=0;
+  }
   Log->d("Init Manager");
   // * For use with setPALevel()
   //enum { RF24_PA_MIN = 0,RF24_PA_LOW, RF24_PA_HIGH, RF24_PA_MAX, RF24_PA_ERROR } rf24_pa_dbm_e ;
@@ -91,6 +95,7 @@ bool Manager::sendCommandSerial() {return 0;}
 
 bool Manager::devSerialEvent() {return 0;}
 void Manager::ascControl(){
+  Log->d("ascControl()");
   if(control.getSonarJoy(&sonarAngle))
   {
     //indicator.print(sonarAngle;, 10, 0, false);
@@ -105,7 +110,9 @@ void Manager::ascControl(){
   indicationData[4]=173;
   indicator.setMovingFlagLED(control.getSignalState());
   indicator.setScanningFlagLED(control.getSonarState());
-  indicator.updateLCD(indicationData, 5);
+  indicationData[5]=control.getSignalState();
+  indicationData[6]=control.getSonarState();
+  indicator.updateLCD(indicationData, 7);
 }
 void Manager::ascSensors(char number=0)
 {

@@ -13,9 +13,12 @@ private:
     //bool isScanningFlag;
     LiquidCrystal_I2C lcd;
     double lcdLatestUpd;
+    int preIndicationData[7];
+    bool compare(int[],int[],int)const; //True if non equals
+    int powd(int ,int)const;
+    void copy(int[],int[],int);
 public:
     Indication();
-    int powd(int ,int)const;
     void print(const char []);
     void print(int[],int);
     void print(char);
