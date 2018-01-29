@@ -65,18 +65,18 @@ void Indication::copy(int origin[], int dest[], int len){
   }
 }
 void Indication::updateLCD(int data[], int len){
-  Log->d("UpdateLCD - 1");
+  //Log->d("UpdateLCD - 1");
     if(millis()-lcdLatestUpd>100){
-      Log->d("UpdateLCD - 2");
+      //Log->d("UpdateLCD - 2");
       //Log->write(int(compare(data, preIndicationData, len)), 'd');
       //lcd.clear();
       //lcd.print(compare(data, preIndicationData, len));
       //copy(data, preIndicationData, len);
       //lcd.print(compare(data, preIndicationData, len));
       if(compare(data, preIndicationData, len)){
-        Log->d("UpdateLCd - 3");
+        //Log->d("UpdateLCd - 3");
       //if(true){
-        Log->d("updateLCD");
+        //Log->d("updateLCD");
         lcd.clear();
         //Motors values
         lcd.setCursor(0, 0);
@@ -113,9 +113,12 @@ void Indication::updateLCD(int data[], int len){
         copy(data, preIndicationData, len);
       }
     }
+    //
     lcd.setCursor(14, 0);
+    lcd.print("^");
     lcd.print(data[5]);
     lcd.setCursor(14,1);
+    lcd.print("*");
     lcd.print(data[6]);
 }
 

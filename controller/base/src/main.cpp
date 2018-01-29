@@ -30,5 +30,5 @@ void loop()
     Log->d("readed radio");
   }*/
   manager->ascControl();
-  delay(100);
+  //delay(100);
 }
