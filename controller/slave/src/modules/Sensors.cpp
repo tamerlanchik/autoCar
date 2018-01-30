@@ -14,7 +14,8 @@ int Sensors::getBorders()
   char data=0;
   for(int i=0;i<4;i++)
   {
-    data*=2+digitalRead(bordersSensor[i]);
+    data*=2;
+    data+=digitalRead(bordersSensor[i]);
   }
   return static_cast<int>(data);
 }
