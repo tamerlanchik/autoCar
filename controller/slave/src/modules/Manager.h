@@ -4,6 +4,7 @@
 #include "RadioExtended.h"
 #include "pins.h"
 #include "Logger.h"
+#include "Sensors.h"
 class Manager{
 private:
     int motorVals[2];
