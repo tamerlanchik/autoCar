@@ -17,9 +17,12 @@ private:
     Message_template mess;
     RadioExtended radio;
     int i=0;
+    int t=0;
+    int test[2];
 public:
     Manager();
     Message_template readRadio();
+    void testAckPayloads();
     void writeRadio(int);
     void writeRadio(Message_template);
     bool radioAvailable();

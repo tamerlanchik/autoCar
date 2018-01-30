@@ -29,6 +29,8 @@ void loop()
     manager->readRadio();
     Log->d("readed radio");
   }*/
-  manager->ascControl();
+  //manager->ascControl();
   //delay(100);
+  manager->makeRadioConnection();
+  delay(1000);
 }

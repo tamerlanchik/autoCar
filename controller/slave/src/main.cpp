@@ -15,11 +15,12 @@ void setup()
 
 void loop()
 {
-  if(manager->radioAvailable())
+  /*if(manager->radioAvailable())
   {
     Log->d("Radio available");
     messag=manager->readRadio();
     messag.data[0]*=1000;
     manager->writeRadio(messag);
-  }
+  }*/
+  manager->readRadio();
 }

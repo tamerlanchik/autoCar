@@ -1,6 +1,6 @@
 #include "Logger.h"
 Logger::Logger(){
-  Serial.begin(115200);
+  Serial.begin(230400);
   delay(200);
   Serial.println("DEBUG: Init serial");
 }
@@ -22,6 +22,7 @@ void Logger::write(const char mess[], char mode='i')const
 }
 void Logger::write(int&  mess, char mode='i')const
 {
+  Serial.print("TEST: ");
   Serial.println(mess);
 }
 void Logger::write(char& mess, char mode='i')const

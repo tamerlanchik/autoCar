@@ -23,11 +23,15 @@ private:
     int indicationData[7];
     int i;
     long int time2, timeCheckJoys;
+    bool connectionState;
+    int test[2];
 
 public:
     Manager();
     bool checkRadioConnection(int,int);
     bool makeRadioConnection();
+    bool isConnectionActive();
+    void testAscPayloads();
     //bool readRadio();
     Message_template readRadio();
     void writeRadio(Message_template);

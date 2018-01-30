@@ -4,27 +4,26 @@
 extern Logger* Log;
 Manager::Manager():radio(9, 10, adr1, adr2, RF24_2MBPS, RF24_PA_MIN, false){
   Log->d("Manager inited");
+  test[0]=10;test[1]=65;
+  delay(20);
   //Log->d("Init manager");
   //radio.initRadio(adr1, adr2, RF24_1MBPS);
   //Log->d("Init Radio");
 }
 
 Message_template Manager::readRadio() {
-    Log->d("Read Radio");
+  if(radio.available()){
     radio.read(&mess, sizeof(mess));
-    /*if(mess.mode==TEST1)
+    Log->d("Package receive:");
+    if(mess.mode==CHECK_CONN)
     {
       mess.data[0]='!';
-      radio.write(&mess, sizeof(mess));
-    }*/
-    Log->d("Message get:");
-    Log->write(mess.mode, 'i');
-    for(int i=0; i<3; i++){
-      Log->write(mess.data[i], 'i');
+      Log->d("Check connection");
+      radio.write(&mess,sizeof(mess));
     }
+  }
     return mess;
 }
-
 bool Manager::radioAvailable(){
     return radio.available();
 }
