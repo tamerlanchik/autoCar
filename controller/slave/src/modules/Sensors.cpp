@@ -5,6 +5,7 @@ Sensors::Sensors():sonar1Servo()
   sonar1Servo.attach(sonarServoPin[0]);
   pinMode(sonar_trigPin[0], OUTPUT);
   pinMode(sonar_echoPin[0], INPUT);
+  Log->d("Init Sensors");
 }
 
 void Sensors::getBorders(bool state[])
