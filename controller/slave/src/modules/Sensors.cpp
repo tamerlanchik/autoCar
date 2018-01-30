@@ -8,13 +8,15 @@ Sensors::Sensors():sonar1Servo()
   Log->d("Init Sensors");
 }
 
-void Sensors::getBorders(bool state[])
+int Sensors::getBorders()
 {
   Log->d("getBorders()");
+  char data=0;
   for(int i=0;i<4;i++)
   {
-    state[i]=digitalRead(bordersSensor[i]);
+    data*=2+digitalRead(bordersSensor[i]);
   }
+  return static_cast<int>(data);
 }
 
 int Sensors::getSonar(int angle,int numb)
@@ -26,7 +28,21 @@ int Sensors::getSonar(int angle,int numb)
   }
   return 1;
 }
-
+void Sensors::getValue(int data[])
+{
+  switch(data[0])
+  {
+    case SONAR_ID:
+      data[1]=getSonar(data[1],data[2]);
+      break;
+    case BORDERS_ID:
+      data[1]=getBorders();
+      break;
+    default:
+      Log->d("Unknown sensor code");
+      break;
+  }
+}
 //private:
 int Sensors::readSonar(int numb){
   Log->d("readSonar()");

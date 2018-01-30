@@ -5,6 +5,7 @@
 #include "pins.h"
 #include "Logger.h"
 #include "Sensors.h"
+#include "Chassis.h"
 class Manager{
 private:
     int motorVals[2];
@@ -17,6 +18,8 @@ private:
     int message[3];
     Message_template mess;
     RadioExtended radio;
+    Sensors sensors;
+    Chassis chassis;
     int i=0;
     int t=0;
     int test[2];

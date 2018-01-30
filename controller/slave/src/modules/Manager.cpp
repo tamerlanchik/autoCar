@@ -2,10 +2,10 @@
 #include "Manager.h"
 //Logger Log(28800);
 extern Logger* Log;
-Manager::Manager():radio(9, 10, adr1, adr2, RF24_2MBPS, RF24_PA_MIN, false){
+Manager::Manager():radio(9, 10, adr1, adr2, RF24_2MBPS, RF24_PA_MIN, false),
+                   sensors(), chassis()
+{
   Log->d("Manager inited");
-  test[0]=10;test[1]=65;
-  delay(20);
   //Log->d("Init manager");
   //radio.initRadio(adr1, adr2, RF24_1MBPS);
   //Log->d("Init Radio");
@@ -15,11 +15,26 @@ Message_template Manager::readRadio() {
   if(radio.available()){
     radio.read(&mess, sizeof(mess));
     Log->d("Package receive:");
-    if(mess.mode==CHECK_CONN)
+    switch(mess.mode)
     {
-      mess.data[0]='!';
-      Log->d("Check connection");
-      radio.write(&mess,sizeof(mess));
+      case CHECK_CONN:
+        Log->d("Check connection");
+        mess.data[0]='!';
+        radio.write(&mess,sizeof(mess));
+        break;
+      case MOTOR_COMMAND:
+        Log->d("Motor command");
+        chassis.setValue(mess.data[0],mess.data[1]);
+        mess.data[0]=1;
+        radio.write(&mess,sizeof(mess));
+        break;
+      case SENSOR_REQUEST:
+        Log->d("Sensor request");
+        sensors.getValue(mess.data);
+        break;
+      default:
+        Log->d("Unknown mode got");
+        break;
     }
   }
     return mess;

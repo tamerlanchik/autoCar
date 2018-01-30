@@ -11,7 +11,8 @@ private:
   int readSonar(int);
 public:
   Sensors();
-  void getBorders(bool[]);
+  int getBorders();
   int getSonar(int,int);
+  void getValue(int[]);
 };
 #endif
