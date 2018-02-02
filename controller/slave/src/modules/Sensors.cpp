@@ -5,6 +5,10 @@ Sensors::Sensors():sonar1Servo()
   sonar1Servo.attach(sonarServoPin[0]);
   pinMode(sonar_trigPin[0], OUTPUT);
   pinMode(sonar_echoPin[0], INPUT);
+  for(int i=0;i<4;i++)
+  {
+    pinMode(bordersSensor[i], INPUT);
+  }
   Log->d("Init Sensors");
 }
 
