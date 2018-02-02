@@ -52,10 +52,11 @@ void Sensors::getValue(int data[])
 //private:
 int Sensors::readSonar(int numb){
   Log->d("readSonar()");
-  digitalWrite(sonar_trigPin[numb-1], LOW);
+  /*digitalWrite(sonar_trigPin[numb-1], LOW);
   delayMicroseconds(2);
   digitalWrite(sonar_trigPin[numb-1], HIGH);
   delayMicroseconds(10);
   digitalWrite(sonar_trigPin[numb-1], LOW);
-  return pulseIn(sonar_echoPin[numb-1], HIGH)/58;
+  return pulseIn(sonar_echoPin[numb-1], HIGH)/58;*/
+  return 123;
 }
