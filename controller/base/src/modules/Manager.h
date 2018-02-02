@@ -24,12 +24,13 @@ private:
     int i;
     long int time2, timeCheckJoys;
     bool connectionState;
+    long int timeConnection;
     int test[2];
 
 public:
     Manager();
     bool checkRadioConnection(int,int);
-    bool makeRadioConnection();
+    bool makeRadioConnection(bool=false);
     bool isConnectionActive();
     void testAscPayloads();
     //bool readRadio();

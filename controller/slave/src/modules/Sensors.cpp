@@ -5,6 +5,10 @@ Sensors::Sensors():sonar1Servo()
   sonar1Servo.attach(sonarServoPin[0]);
   pinMode(sonar_trigPin[0], OUTPUT);
   pinMode(sonar_echoPin[0], INPUT);
+  for(int i=0;i<4;i++)
+  {
+    pinMode(bordersSensor[i], INPUT);
+  }
   Log->d("Init Sensors");
 }
 
@@ -15,7 +19,8 @@ int Sensors::getBorders()
   for(int i=0;i<4;i++)
   {
     data*=2;
-    data+=digitalRead(bordersSensor[i]);
+    //data+=digitalRead(bordersSensor[i]);
+    data+=1;
   }
   return static_cast<int>(data);
 }
@@ -47,10 +52,11 @@ void Sensors::getValue(int data[])
 //private:
 int Sensors::readSonar(int numb){
   Log->d("readSonar()");
-  digitalWrite(sonar_trigPin[numb-1], LOW);
+  /*digitalWrite(sonar_trigPin[numb-1], LOW);
   delayMicroseconds(2);
   digitalWrite(sonar_trigPin[numb-1], HIGH);
   delayMicroseconds(10);
   digitalWrite(sonar_trigPin[numb-1], LOW);
-  return pulseIn(sonar_echoPin[numb-1], HIGH)/58;
+  return pulseIn(sonar_echoPin[numb-1], HIGH)/58;*/
+  return 123;
 }

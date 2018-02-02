@@ -7,6 +7,7 @@ Chassis::Chassis()
 }
 void Chassis::setValue(int a, int b)
 {
+  Log->d("setValue - MOTORS");
 }
 void Chassis::getValue(int val[])
 {

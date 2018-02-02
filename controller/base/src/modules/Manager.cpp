@@ -2,7 +2,8 @@
 #include "Manager.h"
 extern Logger* Log;
 Manager::Manager():radio(9, 10, adr1, adr2, RF24_2MBPS, RF24_PA_MIN, true),
-                  indicator(),control(),i(0),time2(0),timeCheckJoys(0),connectionState(false){
+                  indicator(),control(),i(0),time2(0),timeConnection(0),
+                  timeCheckJoys(0),connectionState(false){
   for(int i=0; i<7; i++)
   {
     indicationData[i]=0;
@@ -32,29 +33,51 @@ bool Manager::checkRadioConnection(int timeOut, int tries)
   }while(c<tries);
   return false;
 }
-bool Manager::makeRadioConnection()
+bool Manager::makeRadioConnection(bool isEmerge=false)
 {
-  mess.mode=CHECK_CONN;
-  mess.data[0]='?';
-  connectionState=false;
-  while(!connectionState)
-  {
-    if(radio.write(&mess, sizeof(mess))){
-      Log->d("Succesfully sent");
-      if(radio.available()){
-        radio.read(&mess,sizeof(mess));
-        if(mess.data[0]=='!'){
-          Log->d("Connection exits");
-          connectionState=true;
+  if(isEmerge || radio.isTimeToCheckConnection()){
+    Log->d("makeConnection()");
+    mess.mode=CHECK_CONN;
+    mess.data[0]='?';
+    connectionState=false;
+    while(!connectionState)
+    {
+      mess.mode=CHECK_CONN;
+      if(radio.write(&mess, sizeof(mess))){
+      //radio.write(&mess, sizeof(mess));
+      //if(true){
+        Log->d("Succesfully sent");
+        /*while(!radio.available())
+        {
+          Log->d("Wait");
+          delay(5);
+        }*/
+        delay(2);
+        if(radio.available()){
+          radio.read(&mess,sizeof(mess));
+          if(mess.data[0]=='!'){
+            Log->i("Connection exits");
+            printLCD("Connected");
+            connectionState=true;
+            radio.lastConnectionTime = millis()/1000;
+          }
+          else{
+            Log->e("Wrong answer");
+            connectionState = false;
+          }
+        }
+        else{
+          Log->e("No answer");
         }
       }
       else{
         Log->d("No connection");
+        printLCD("No connection");
         connectionState=false;
       }
     }
   }
-  return true;
+    return connectionState;
 }
 /*bool Manager::readRadio() {
   Log->d("readRadio()");

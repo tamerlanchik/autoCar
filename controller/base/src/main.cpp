@@ -14,10 +14,12 @@ void setup()
   Log = new Logger();
   Log->d("BASE");
   manager=new Manager();
+  manager->printLCD("Start...");
 }
 
 void loop()
 {
+  while(!manager->makeRadioConnection()) ;
   //manager->makeRadioConnection();
   /*if((millis()-time) > 500){
     Log->d("sendTest time");
@@ -31,6 +33,5 @@ void loop()
   }*/
   //manager->ascControl();
   //delay(100);
-  manager->makeRadioConnection();
-  delay(1000);
+  //delay(1000);
 }

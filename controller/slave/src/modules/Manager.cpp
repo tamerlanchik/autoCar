@@ -19,18 +19,26 @@ Message_template Manager::readRadio() {
     {
       case CHECK_CONN:
         Log->d("Check connection");
+        if(mess.data[0]=='?')
+        {
+          Log->i("'?' request");
+        }
+        else
+        {
+          Log->e("Wrong conn request");
+        }
         mess.data[0]='!';
         radio.write(&mess,sizeof(mess));
         break;
       case MOTOR_COMMAND:
         Log->d("Motor command");
         chassis.setValue(mess.data[0],mess.data[1]);
-        mess.data[0]=1;
         radio.write(&mess,sizeof(mess));
         break;
       case SENSOR_REQUEST:
         Log->d("Sensor request");
         sensors.getValue(mess.data);
+        radio.write(&mess, sizeof(mess));
         break;
       default:
         Log->d("Unknown mode got");

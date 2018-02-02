@@ -9,9 +9,9 @@ RadioExtended::RadioExtended(int  a, int b, const uint8_t*  adr1,
   this->setDataRate(r);
   this->setPALevel(RF24_PA_LOW);
   this->setRetries(15, 5);
-  this->setAutoAck(1);                    // Ensure autoACK is enabled
-  this->enableAckPayload();
-  this->enableDynamicPayloads();
+  //this->setAutoAck(1);                    // Ensure autoACK is enabled
+  //this->enableAckPayload();
+  //this->enableDynamicPayloads();
   //role: 1-base, 0-slave
   if(role){
     this->openReadingPipe(1,*adr2);
@@ -32,7 +32,9 @@ bool RadioExtended::write(void* data, int size)
     Log->d("Start sending");
     do{
        this->stopListening();
+       Log->d("Stop listening");
        fl=RF24::write(data, size);
+       Log->d("Start listening");
        this->startListening();
        if(!fl) delay(1*random(1, 5));
     }while((i++<10) && !fl);

@@ -1,6 +1,6 @@
 #include "Logger.h"
 Logger::Logger(){
-  Serial.begin(230400);
+  Serial.begin(115200);
   delay(200);
   Serial.println("DEBUG: Init serial");
 }

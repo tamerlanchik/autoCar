@@ -22,5 +22,5 @@ void loop()
     messag.data[0]*=1000;
     manager->writeRadio(messag);
   }*/
-  messag=manager->readRadio();
+  manager->readRadio();
 }

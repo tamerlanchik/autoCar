@@ -3,15 +3,16 @@
 extern Logger* Log;
 RadioExtended::RadioExtended(int  a, int b, const uint8_t*  adr1,
                             const uint8_t* adr2, rf24_datarate_e r,
-                            rf24_pa_dbm_e l, bool role):RF24(a, b)
+                            rf24_pa_dbm_e l, bool role):RF24(a, b),
+                            lastConnectionTime(0),connectionTimeout(3)
 {
   this->begin();
   this->setDataRate(r);
   this->setPALevel(RF24_PA_LOW);
   this->setRetries(15, 5);
-  this->setAutoAck(1);                    // Ensure autoACK is enabled
-  this->enableAckPayload();
-  this->enableDynamicPayloads();
+  //this->setAutoAck(1);                    // Ensure autoACK is enabled
+  //this->enableAckPayload();
+  //this->enableDynamicPayloads();
   //role: 1-base, 0-slave
   if(role){
     this->openReadingPipe(1,*adr2);
@@ -27,7 +28,11 @@ RadioExtended::RadioExtended(int  a, int b, const uint8_t*  adr1,
 }
 bool RadioExtended::write(void* data, int size)
 {
-    int i=0;
+  bool fl;
+  this->stopListening();
+  fl=RF24::write(data, size);
+  this->startListening();
+    /*int i=0;
     bool fl;
     Log->d("Start sending");
     do{
@@ -42,9 +47,17 @@ bool RadioExtended::write(void* data, int size)
     else{
       Log->d("Success send\n");
     }
-    return fl;
+    return fl;*/
     //this->stopListening();
     //RF24::write(data, size);
     //this->startListening();
-    //return 1;
+    return fl;
+}
+bool RadioExtended::isTimeToCheckConnection()
+{
+  if(millis()/1000-lastConnectionTime > connectionTimeout)
+  {
+    return true;
+  }
+  else {return false;}
 }
