@@ -32,29 +32,35 @@ bool Manager::checkRadioConnection(int timeOut, int tries)
   }while(c<tries);
   return false;
 }
-bool Manager::makeRadioConnection()
+bool Manager::makeRadioConnection(bool isEmerge)
 {
-  mess.mode=CHECK_CONN;
-  mess.data[0]='?';
-  connectionState=false;
-  while(!connectionState)
+  if(isEmerge || radio.isTimeToCheckConnection())
   {
-    if(radio.write(&mess, sizeof(mess))){
-      Log->d("Succesfully sent");
-      if(radio.available()){
-        radio.read(&mess,sizeof(mess));
-        if(mess.data[0]=='!'){
-          Log->d("Connection exits");
-          connectionState=true;
+    Log->d("makeConnection()");
+    mess.mode=CHECK_CONN;
+    mess.data[0]='?';
+    connectionState=false;
+    int i=0;
+    while(!connectionState && i++<5)
+    {
+      if(radio.write(&mess, sizeof(mess))){
+        Log->d("Succesfully sent");
+        delay(1);
+        if(radio.available()){
+          radio.read(&mess,sizeof(mess));
+          if(mess.data[0]=='!'){
+            Log->d("Connection exits");
+            connectionState=true;
+          }
+        }
+        else{
+          Log->d("No connection");
+          connectionState=false;
         }
       }
-      else{
-        Log->d("No connection");
-        connectionState=false;
-      }
     }
+    return connectionState;
   }
-  return true;
 }
 /*bool Manager::readRadio() {
   Log->d("readRadio()");
