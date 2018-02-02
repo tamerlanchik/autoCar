@@ -23,6 +23,7 @@ private:
     int i=0;
     int t=0;
     int test[2];
+    int reloadRadioTime;
 public:
     Manager();
     Message_template readRadio();
@@ -37,5 +38,6 @@ public:
     bool sendCommandSerial();
     bool devSerialEvent();
     void ascSensors(char);
+    void reloadRadio();
 };
 #endif

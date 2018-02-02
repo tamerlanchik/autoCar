@@ -23,4 +23,5 @@ void loop()
     manager->writeRadio(messag);
   }*/
   messag=manager->readRadio();
+  //manager->reloadRadio();
 }

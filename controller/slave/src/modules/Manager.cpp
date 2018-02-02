@@ -2,7 +2,7 @@
 #include "Manager.h"
 //Logger Log(28800);
 extern Logger* Log;
-Manager::Manager():sensors(), chassis()
+Manager::Manager():sensors(), chassis(),reloadRadioTime(0)
 {
   radio=new RadioExtended(9, 10, adr1, adr2, RF24_2MBPS, RF24_PA_MIN, false);
   Log->d("Manager inited");
@@ -22,7 +22,7 @@ Message_template Manager::readRadio() {
         delay(2);
         radio=new RadioExtended(9, 10, adr1, adr2, RF24_2MBPS, RF24_PA_MIN, false);
         break;
-      case CHECK_CONN:
+      case 57:
         Log->d("Check connection");
         mess.data[0]='!';
         radio->write(&mess,sizeof(mess));
@@ -73,4 +73,13 @@ void Manager::ascSensors(char number=0)
         message[0] = SENSOR_REQUEST;
         message[1] = number;
         radio->write(message, sizeof(message));
+}
+void Manager::reloadRadio(){
+  if(millis()/1000-reloadRadioTime > 10)
+  {
+    delete radio;
+    delay(5);
+    radio=new RadioExtended(9, 10, adr1, adr2, RF24_2MBPS, RF24_PA_MIN, false);
+    reloadRadioTime=millis()/1000;
+  }
 }

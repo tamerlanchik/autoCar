@@ -37,7 +37,7 @@ bool Manager::makeRadioConnection(bool isEmerge)
   if(isEmerge || radio.isTimeToCheckConnection())
   {
     Log->d("makeConnection()");
-    mess.mode=CHECK_CONN;
+    mess.mode=57;
     mess.data[0]='?';
     connectionState=false;
     int i=0;
@@ -45,22 +45,29 @@ bool Manager::makeRadioConnection(bool isEmerge)
     {
       if(radio.write(&mess, sizeof(mess))){
         Log->d("Succesfully sent");
-        delay(1);
+        delay(5);
         if(radio.available()){
           radio.read(&mess,sizeof(mess));
           if(mess.data[0]=='!'){
             Log->d("Connection exits");
             connectionState=true;
+            radio.lastConnectionTime=millis()/1000;
           }
         }
         else{
           Log->d("No connection");
           connectionState=false;
+          if(i<2){
+          mess.mode=12;
+          radio.write(&mess, sizeof(mess));
+          delay(50);
+          }
         }
       }
     }
-    return connectionState;
+    Log->d("End makeRC");
   }
+  return connectionState;
 }
 /*bool Manager::readRadio() {
   Log->d("readRadio()");
@@ -137,7 +144,7 @@ void Manager::ascControl(){
 }
 void Manager::ascSensors(char number=0)
 {
-        message[0] = SENSOR_REQUEST;
+        message[0] = 74;
         message[1] = number;
         radio.write(message, sizeof(message));
         Log->d("Asc sensors");
