@@ -29,7 +29,7 @@ private:
 public:
     Manager();
     bool checkRadioConnection(int,int);
-    bool makeRadioConnection();
+    bool makeRadioConnection(bool=false);
     bool isConnectionActive();
     void testAscPayloads();
     //bool readRadio();
