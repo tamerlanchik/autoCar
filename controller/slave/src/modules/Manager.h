@@ -17,7 +17,7 @@ private:
     int urgentData[3];
     int message[3];
     Message_template mess;
-    RadioExtended radio;
+    RadioExtended* radio;
     Sensors sensors;
     Chassis chassis;
     int i=0;
