@@ -17,11 +17,6 @@ Message_template Manager::readRadio() {
     Log->d("Package receive:");
     switch(mess.mode)
     {
-      case 12:
-        delete radio;
-        delay(2);
-        radio=new RadioExtended(9, 10, adr1, adr2, RF24_2MBPS, RF24_PA_MIN, false);
-        break;
       case 57:
         Log->d("Check connection");
         mess.data[0]='!';
@@ -73,13 +68,4 @@ void Manager::ascSensors(char number=0)
         message[0] = SENSOR_REQUEST;
         message[1] = number;
         radio->write(message, sizeof(message));
-}
-void Manager::reloadRadio(){
-  if(millis()/1000-reloadRadioTime > 10)
-  {
-    delete radio;
-    delay(5);
-    radio=new RadioExtended(9, 10, adr1, adr2, RF24_2MBPS, RF24_PA_MIN, false);
-    reloadRadioTime=millis()/1000;
-  }
 }
