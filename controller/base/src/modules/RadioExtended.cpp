@@ -4,7 +4,7 @@ extern Logger* Log;
 RadioExtended::RadioExtended(int  a, int b, const uint8_t*  adr1,
                             const uint8_t* adr2, rf24_datarate_e r,
                             rf24_pa_dbm_e l, bool role):RF24(a, b),
-                            connectionTimeout(3),lastConnectionTime(0)
+                            connectionTimeout(1),lastConnectionTime(0)
 {
   this->begin();
   this->setDataRate(r);
