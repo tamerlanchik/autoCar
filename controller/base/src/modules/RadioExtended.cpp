@@ -3,7 +3,8 @@
 extern Logger* Log;
 RadioExtended::RadioExtended(int  a, int b, const uint8_t*  adr1,
                             const uint8_t* adr2, rf24_datarate_e r,
-                            rf24_pa_dbm_e l, bool role):RF24(a, b)
+                            rf24_pa_dbm_e l, bool role):RF24(a, b),
+                            connectionTimeout(3),lastConnectionTime(0)
 {
   this->begin();
   this->setDataRate(r);
@@ -47,4 +48,12 @@ bool RadioExtended::write(void* data, int size)
     //RF24::write(data, size);
     //this->startListening();
     //return 1;
+}
+bool RadioExtended::isTimeToCheckConnection()
+ {
+   if(millis()/1000-lastConnectionTime > connectionTimeout)
+   {
+     return true;
+   }
+   else {return false;}
 }
