@@ -31,6 +31,7 @@ Message_template Manager::readRadio() {
       case SENSOR_REQUEST:
         Log->d("Sensor request");
         sensors.getValue(mess.data);
+        radio.write(&mess, sizeof(mess));
         break;
       default:
         Log->d("Unknown mode got");
