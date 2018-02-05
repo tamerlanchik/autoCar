@@ -45,7 +45,7 @@ Message_template Manager::readRadio() {
         break;
       case 91:
         Log->d("Bip");
-        bip();
+        bip(mess.data[0]);
         break;
       default:
         Log->d("Unknown mode got");
@@ -84,7 +84,10 @@ void Manager::ascSensors(char number=0)
         message[1] = number;
         radio->write(message, sizeof(message));
 }
-void Manager::bip()const
+void Manager::bip(int isOn)const
 {
-
+  if(isOn)
+    tone(buzzer, 500);
+  else
+    noTone(buzzer);
 }

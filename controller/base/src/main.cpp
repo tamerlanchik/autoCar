@@ -14,10 +14,13 @@ void setup()
   Log = new Logger();
   Log->d("BASE");
   manager=new Manager();
+  manager->makeRadioConnection(true);
 }
 
 void loop()
 {
-  manager->debugRadio();
   manager->makeRadioConnection();
+  manager->debugRadio();
+  manager->ackControl();
+  manager->ackSensors();
 }

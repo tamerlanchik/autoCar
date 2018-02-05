@@ -19,8 +19,8 @@ int Sensors::getBorders()
   for(int i=0;i<4;i++)
   {
     data*=2;
-    //data+=digitalRead(bordersSensor[i]);
-    data+=1;
+    data+=static_cast<int>(analogRead(bordersSensor[i]))/100;
+    //data+=1;
   }
   return static_cast<int>(data);
 }

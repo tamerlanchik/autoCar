@@ -9,7 +9,7 @@ Indication::Indication():lcd(0x27,16,2),lcdLatestUpd(0.0) {
   lcd.createChar(2, degree);
   for(int i=0; i<7; i++)
   {
-    preIndicationData[i]=0;
+    preIndicationData[i]=1;
   }
   pinMode(movingFlagLED, OUTPUT);
   pinMode(scanningFlagLED, OUTPUT);
@@ -79,7 +79,7 @@ void Indication::copy(int origin[], int dest[], int len){
     dest[i]=origin[i];
   }
 }
-void Indication::updateLCD(int data[], int len){
+void Indication::updateLCD(int data[], int len, bool isEmerge){
   //Log->d("UpdateLCD - 1");
     if(millis()-lcdLatestUpd>100){
       //Log->d("UpdateLCD - 2");

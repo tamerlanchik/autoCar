@@ -25,7 +25,7 @@ public:
     void print(int, int, int, bool);
     void print(bool);*/
     void print(void*,char='s');
-    void updateLCD(int[],int);
+    void updateLCD(int[],int,bool=false);
     void setMovingFlagLED(bool)const;
     void setScanningFlagLED(bool)const;
 };

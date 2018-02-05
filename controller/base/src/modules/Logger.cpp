@@ -20,6 +20,7 @@ void Logger::write(void* mess, char mode, char level)const
     case 'c': Serial.println(*((char*)mess)); break;
     case 's': Serial.println((char*)mess); break;
     case 'b': Serial.println(*((bool*)mess)); break;
+    case 'l': Serial.println(*((double*)mess)); break;
     default: break;
   }
 }

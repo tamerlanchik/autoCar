@@ -41,8 +41,8 @@ public:
     bool sendCommandRadio(int);
     bool sendCommandSerial();
     bool devSerialEvent();
-    void ascControl();
-    void ascSensors(char);
+    void ackControl();
+    void ackSensors(char=0);
     void printLCD(void*,char='s');
     void handleControlResults();
     void debugRadio();
