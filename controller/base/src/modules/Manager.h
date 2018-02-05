@@ -47,5 +47,6 @@ public:
     void ascSensors(char);
     void printLCD(const char[]);
     void handleControlResults();
+    void debugRadio();
 };
 #endif

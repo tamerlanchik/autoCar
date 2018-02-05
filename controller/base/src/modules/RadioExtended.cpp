@@ -8,7 +8,7 @@ RadioExtended::RadioExtended(int  a, int b, const uint8_t*  adr1,
 {
   this->begin();
   this->setDataRate(r);
-  this->setPALevel(RF24_PA_LOW);
+  this->setPALevel(l);
   this->setRetries(15, 5);
   this->setAutoAck(1);                    // Ensure autoACK is enabled
   this->enableAckPayload();
@@ -28,12 +28,19 @@ RadioExtended::RadioExtended(int  a, int b, const uint8_t*  adr1,
 }
 bool RadioExtended::write(void* data, int size)
 {
+  this->stopListening();
+  bool fl = RF24::write(data,size);
+  this->startListening();
+  return fl;
+}
+bool RadioExtended::writeChecked(void* data, int size)
+{
     int i=0;
     bool fl;
     //Log->d("Start sending");
     do{
        this->stopListening();
-       fl=RF24::write(data, size);
+       fl=write(data, size);
        this->startListening();
        if(!fl) delay(1*random(1, 5));
     }while((i++<10) && !fl);
@@ -49,6 +56,7 @@ bool RadioExtended::write(void* data, int size)
     //this->startListening();
     //return 1;
 }
+
 bool RadioExtended::isTimeToCheckConnection()
  {
    if(millis()/1000-lastConnectionTime > connectionTimeout)
@@ -56,4 +64,39 @@ bool RadioExtended::isTimeToCheckConnection()
      return true;
    }
    else {return false;}
+}
+bool RadioExtended::ackRequest(void* data,int len,void* answer)
+{
+
+  //if cannot send message
+  Log->d("ackRequest");
+  if(!this->writeChecked(data,len))
+  {
+    Log->e("Cant send ack");
+    return false;
+  }
+  else Log->d("Ack is sent");
+
+    //waiting for an answer
+  int tmt=millis()/1000;
+  while((millis()/1000-tmt)<=5)
+  {
+    if(this->available())
+    {
+      this->read(answer,len);
+      if(static_cast<Message_template*>(answer)->mode == static_cast<Message_template*>(data)->mode)
+      {
+        Log->d("Correct ans got");
+        return true;
+      }
+      else
+      {
+        Log->e("Prev or wrong ans got");
+        continue;
+      }
+    }
+    else {delay(1);}
+  }
+  Log->e("No ans");
+  return 0;
 }

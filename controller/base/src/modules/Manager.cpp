@@ -1,7 +1,7 @@
 //base
 #include "Manager.h"
 extern Logger* Log;
-Manager::Manager():radio(9, 10, adr1, adr2, RF24_2MBPS, RF24_PA_MIN, true),
+Manager::Manager():radio(9, 10, adr1, adr2, RF24_250KBPS, RF24_PA_MIN, true),
                   indicator(),control(),i(0),time2(0),timeCheckJoys(0),connectionState(false){
   for(int i=0; i<7; i++)
   {
@@ -44,24 +44,22 @@ bool Manager::makeRadioConnection(bool isEmerge)
     int i=0;
     while(!connectionState && i++<5)
     {
-      if(radio.write(&mess, sizeof(mess))){
-        //Log->d("Succesfully sent");
-        delay(5);
-        if(radio.available()){
-          radio.read(&mess,sizeof(mess));
+        if(!radio.ackRequest(&mess,sizeof(mess), &mess))
+        {
+          Log->e("Cant send ackReq()");
+        }
+        else{
           if(mess.data[0]=='!'){
             Log->d("Connection exits\n");
             connectionState=true;
             radio.lastConnectionTime=millis()/1000;
           }
-        }
-        else{
-          Log->d("No connection\n");
-          connectionState=false;
+          else{
+            Log->d("No connection\n");
+            connectionState=false;
+          }
         }
       }
-    }
-    //Log->d("End makeRC\n");
   }
   return connectionState;
 }
@@ -218,4 +216,24 @@ void Manager::printLCD(const char message[])
 {
   indicator.print(message);
   Log->d("printLCD");
+}
+void Manager::debugRadio()
+{
+  if(Serial.available())
+  {
+    int t = Serial.read();
+    Log->d("Received: ");
+    Log->d(&t, 'd');
+    //Serial.println((int)t);
+    mess.mode=123;
+    mess.data[0]=t;
+    Message_template ans;
+    if(radio.ackRequest(&mess,sizeof(mess),&ans))
+    {
+      Log->i(&ans.data[0],'d');
+    }
+    else{
+      Log->e("No ascRequest");
+    }
+  }
 }

@@ -4,7 +4,7 @@
 extern Logger* Log;
 Manager::Manager():sensors(), chassis(),reloadRadioTime(0)
 {
-  radio=new RadioExtended(9, 10, adr1, adr2, RF24_2MBPS, RF24_PA_MIN, false);
+  radio=new RadioExtended(9, 10, adr1, adr2, RF24_250KBPS, RF24_PA_MAX, false);
   Log->d("Manager inited");
   //Log->d("Init manager");
   //radio->initRadio(adr1, adr2, RF24_1MBPS);
@@ -17,6 +17,11 @@ Message_template Manager::readRadio() {
     Log->d("Package receive:");
     switch(mess.mode)
     {
+      case 123:
+        Log->d("Check package");
+        mess.data[0]*=2;
+        radio->writeChecked(&mess,sizeof(mess));
+        break;
       case 57:
         Log->d("Check connection");
         mess.data[0]='!';
@@ -44,7 +49,7 @@ Message_template Manager::readRadio() {
         break;
       default:
         Log->d("Unknown mode got");
-        Log->write(mess.mode, 'd');
+        Log->d(mess.mode, 'd');
         break;
     }
   }
