@@ -14,10 +14,10 @@ class Logger
 {
 public:
   Logger();
-  void write(void*,char='d', char level='i')const;
-  void d(void*,char='d')const;
-  void e(void*,char='d')const;
-  void i(void*,char='d')const;
+  void write(void*,char='s', char level='i')const;
+  void d(void*,char='s')const;
+  void e(void*,char='s')const;
+  void i(void*,char='s')const;
 };
 
 #endif

@@ -7,7 +7,7 @@ Logger::Logger(){
 
 void Logger::write(void* mess, char mode, char level)const
 {
-  switch(mode)
+  switch(level)
   {
     case 'i': Serial.print("I: "); break;
     case 'd': Serial.print("D: "); break;
