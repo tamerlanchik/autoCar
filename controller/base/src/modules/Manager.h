@@ -33,11 +33,9 @@ public:
     bool makeRadioConnection(bool=false);
     bool isConnectionActive();
     void testAscPayloads();
-    //bool readRadio();
     Message_template readRadio();
     void writeRadio(Message_template);
     bool radioAvailable();
-    bool readControl()const;
     bool setIndication(int);
     void sendTest();
     bool sendCommandRadio(int);
@@ -45,7 +43,7 @@ public:
     bool devSerialEvent();
     void ascControl();
     void ascSensors(char);
-    void printLCD(const char[]);
+    void printLCD(void*,char='s');
     void handleControlResults();
     void debugRadio();
 };

@@ -37,7 +37,6 @@ bool RadioExtended::writeChecked(void* data, int size)
 {
     int i=0;
     bool fl;
-    //Log->d("Start sending");
     do{
        this->stopListening();
        fl=write(data, size);
@@ -51,10 +50,6 @@ bool RadioExtended::writeChecked(void* data, int size)
       Log->d("Success send");
     }
     return fl;
-    //this->stopListening();
-    //RF24::write(data, size);
-    //this->startListening();
-    //return 1;
 }
 
 bool RadioExtended::isTimeToCheckConnection()

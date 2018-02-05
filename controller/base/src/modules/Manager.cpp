@@ -63,14 +63,6 @@ bool Manager::makeRadioConnection(bool isEmerge)
   }
   return connectionState;
 }
-/*bool Manager::readRadio() {
-  Log->d("readRadio()");
-    radio.read(&message, 6);
-    Log->d("Read msg");
-    indicator.print(message[1]);
-    Log->d("Print msg");
-    return 1;
-}*/
 Message_template Manager::readRadio() {
     if(radio.available()){
       Log->d("Read Radio");
@@ -90,11 +82,8 @@ void Manager::writeRadio(Message_template m)
   radio.write(&mess, sizeof(mess));
 }
 bool Manager::radioAvailable(){
-    //Log->d("Radio available");
     return radio.available();
 }
-
-bool Manager::readControl()const {return 0;}
 
 bool Manager::setIndication(int k)
 {
@@ -212,10 +201,17 @@ void Manager::handleControlResults()
   }
   indicator.updateLCD(indicationData, 7);
 }
-void Manager::printLCD(const char message[])
+void Manager::printLCD(void* message, char type)
 {
-  indicator.print(message);
-  Log->d("printLCD");
+  /*switch(type)
+  {
+    case 'd': indicator.print(*((int*)message)); break;
+    case 'c': indicator.print(*((char*)mess)); break;
+    case 's': indicator.print((char*)mess); break;
+    case 'b': indicator.print(*((bool*)mess)); break;
+    default: break;
+  }*/
+  indicator.print(message,type);
 }
 void Manager::debugRadio()
 {

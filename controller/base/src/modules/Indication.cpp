@@ -24,7 +24,7 @@ int Indication::powd(int a, int b)const{
     return res;
 }
 
-void Indication::print(const char message[]){
+/*void Indication::print(const char message[]){
   lcd.clear();
   lcd.print(message);
   Log->d("Print LCD success");
@@ -49,6 +49,21 @@ void Indication::print(int data[], int size){
 void Indication::print(bool a){
   lcd.clear();
   //lcd.print(a);
+}*/
+void Indication::print(void* data, char mode)
+{
+  lcd.clear();
+  switch(mode)
+  {
+    case 'd': lcd.print(*((int*)data)); break;
+    case 'c': lcd.print(*((char*)data)); break;
+    case 's': lcd.print((char*)data); break;
+    case 'b': lcd.print(*((bool*)data)); break;
+    default:
+      lcd.print("Wrong mode");
+      Log->e("Wrong ind.prt mode");
+      break;
+    }
 }
 bool Indication::compare(int data1[], int data2[], int len)const {
   for(int i=0; i<len; i++){
