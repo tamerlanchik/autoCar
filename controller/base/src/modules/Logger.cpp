@@ -1,40 +1,34 @@
 #include "Logger.h"
 Logger::Logger(){
-  Serial.begin(230400);
+  Serial.begin(115200);
   delay(200);
   Serial.println("DEBUG: Init serial");
 }
-void initSerial(int speed){
-  Serial.begin(speed);
-  delay(400);
-  Serial.println("<font color='#f00'>Init serial</font>");
-}
-void Logger::write(const char mess[], char mode='i')const
+
+void Logger::write(void* mess, char mode, char level)const
 {
   switch(mode)
   {
-    case 'i': Serial.print("INFO: "); break;
-    case 'd': Serial.print("DEBUG: "); break;
-    case 'e': Serial.print("ERROR: "); break;
+    case 'i': Serial.print("I: "); break;
+    case 'd': Serial.print("D: "); break;
+    case 'e': Serial.print("E: "); break;
     default: break;
   }
-  Serial.println(mess);
+  switch(mode)
+  {
+    case 'd': Serial.println(*((int*)mess));break;
+    case 'c': Serial.println(*((char*)mess)); break;
+    case 's': Serial.println((char*)mess); break;
+    case 'b': Serial.println(*((bool*)mess)); break;
+    default: break;
+  }
 }
-void Logger::write(int&  mess, char mode='i')const
-{
-  Serial.print("TEST: ");
-  Serial.println(mess);
+void Logger::d(void* mess, char mode)const{
+  write(mess, mode, 'd');
 }
-void Logger::write(char& mess, char mode='i')const
-{
-  Serial.println(int(mess));
+void Logger::e(void* mess, char mode)const{
+  write(mess, mode, 'e');
 }
-void Logger::d(const char mess[])const{
-  write(mess, 'd');
-}
-void Logger::e(const char mess[])const{
-  write(mess, 'e');
-}
-void Logger::i(const char mess[])const{
-  write(mess, 'i');
+void Logger::i(void* mess, char mode)const{
+  write(mess, mode, 'i');
 }

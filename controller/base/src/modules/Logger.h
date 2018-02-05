@@ -14,13 +14,10 @@ class Logger
 {
 public:
   Logger();
-  void initSerial(int);
-  void write(const char[],char)const;
-  void write(char&,char)const;
-  void write(int&,char)const;
-  void d(const char[])const;
-  void e(const char[])const;
-  void i(const char[])const;
+  void write(void*,char='d', char level='i')const;
+  void d(void*,char='d')const;
+  void e(void*,char='d')const;
+  void i(void*,char='d')const;
 };
 
 #endif
