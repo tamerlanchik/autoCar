@@ -18,7 +18,10 @@ void setup()
 
 void loop()
 {
-  //manager->makeRadioConnection();
+  while(!manager->makeRadioConnection())
+  {
+    manager->printLCD("No conn");
+  }
   /*if((millis()-time) > 500){
     Log->d("sendTest time");
     manager->sendTest();
@@ -29,8 +32,10 @@ void loop()
     manager->readRadio();
     Log->d("readed radio");
   }*/
-  //manager->ascControl();
-  //delay(100);
-  manager->makeRadioConnection();
-  delay(1000);
+  manager->ascControl();
+  //manager->ascSensors(0);
+  manager->readRadio();
+  delay(100);
+  //manager->makeRadioConnection();
+  //delay(1000);
 }

@@ -21,6 +21,7 @@ private:
     Joysticks control;
     Message_template mess;
     int indicationData[7];
+    int data[7];
     int i;
     long int time2, timeCheckJoys;
     bool connectionState;
@@ -39,11 +40,12 @@ public:
     bool readControl()const;
     bool setIndication(int);
     void sendTest();
-    bool sendCommandRadio();
+    bool sendCommandRadio(int);
     bool sendCommandSerial();
     bool devSerialEvent();
     void ascControl();
     void ascSensors(char);
     void printLCD(const char[]);
+    void handleControlResults();
 };
 #endif

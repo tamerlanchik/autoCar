@@ -25,23 +25,29 @@ int Sensors::getBorders()
   return static_cast<int>(data);
 }
 
-int Sensors::getSonar(int angle,int numb)
+int Sensors::getSonar(int numb,int angle,int mode)
 {
-  if(numb==1)
+  if(numb==89)
   {
     sonar1Servo.write(angle);
-    return readSonar(numb);
+    if(mode)
+      return readSonar(numb);
+    else
+      return 4;
   }
-  return 1;
+  return 3;
 }
 void Sensors::getValue(int data[])
 {
   switch(data[0])
   {
-    case SONAR_ID:
-      data[1]=getSonar(data[1],data[2]);
+    case 89:
+      data[1]=getSonar(data[0],data[1],data[2]);
       break;
-    case BORDERS_ID:
+    case 90:
+      data[1]=getSonar(data[0],data[1],data[2]);
+      break;
+    case 33:
       data[1]=getBorders();
       break;
     default:

@@ -38,5 +38,6 @@ public:
     bool sendCommandSerial();
     bool devSerialEvent();
     void ascSensors(char);
+    void bip()const;
 };
 #endif

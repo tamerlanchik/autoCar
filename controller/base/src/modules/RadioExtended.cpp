@@ -30,7 +30,7 @@ bool RadioExtended::write(void* data, int size)
 {
     int i=0;
     bool fl;
-    Log->d("Start sending");
+    //Log->d("Start sending");
     do{
        this->stopListening();
        fl=RF24::write(data, size);
@@ -41,7 +41,7 @@ bool RadioExtended::write(void* data, int size)
       Log->e("Radio: Cant send");
     }
     else{
-      Log->d("Success send\n");
+      Log->d("Success send");
     }
     return fl;
     //this->stopListening();

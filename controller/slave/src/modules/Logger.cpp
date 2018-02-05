@@ -20,7 +20,7 @@ void Logger::write(const char mess[], char mode='i')const
   }
   Serial.println(mess);
 }
-void Logger::write(int&  mess, char mode='i')const
+void Logger::write(int  mess, char mode='i')const
 {
   Serial.println(mess);
 }

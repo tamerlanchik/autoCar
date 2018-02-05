@@ -22,19 +22,29 @@ Message_template Manager::readRadio() {
         mess.data[0]='!';
         radio->write(&mess,sizeof(mess));
         break;
-      case MOTOR_COMMAND:
+      case 74:
         Log->d("Motor command");
         chassis.setValue(mess.data[0],mess.data[1]);
         mess.data[0]=1;
-        radio->write(&mess,sizeof(mess));
+        //radio->write(&mess,sizeof(mess));
         break;
-      case SENSOR_REQUEST:
+      case 14:
         Log->d("Sensor request");
         sensors.getValue(mess.data);
         radio->write(&mess, sizeof(mess));
         break;
+      case 15:
+        Log->d("Sensor request");
+        sensors.getValue(mess.data);
+        radio->write(&mess, sizeof(mess));
+        break;
+      case 91:
+        Log->d("Bip");
+        bip();
+        break;
       default:
         Log->d("Unknown mode got");
+        Log->write(mess.mode, 'd');
         break;
     }
   }
@@ -68,4 +78,8 @@ void Manager::ascSensors(char number=0)
         message[0] = SENSOR_REQUEST;
         message[1] = number;
         radio->write(message, sizeof(message));
+}
+void Manager::bip()const
+{
+
 }
