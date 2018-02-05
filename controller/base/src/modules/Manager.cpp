@@ -131,7 +131,7 @@ bool Manager::sendCommandRadio(int mode) {
       break;
     case 91:
       mess.data[0]=data[5];
-      radio.write(&mess, sizeof(mess));
+      radio.ackRequest(&mess, sizeof(mess),&mess);
       break;
     default:
       Log->e("Unknown command mode");
@@ -176,6 +176,7 @@ void Manager::ackSensors(char number)
     mess.data[0]=33;
     radio.ackRequest(&mess, sizeof(mess),&mess);
     indicationData[2]=mess.data[1];
+    indicator.updateLCD(indicationData, 7);
 }
 void Manager::handleControlResults()
 {
@@ -222,5 +223,9 @@ void Manager::debugRadio(){
     else{
       Log->e("No ascRequest");
     }
+    /*if(radio.write(&mess,sizeof(mess)))
+    {
+      radio.read(&mess, sizeof(mess));
+    }*/
   }
 }

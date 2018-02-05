@@ -20,7 +20,11 @@ void setup()
 void loop()
 {
   manager->makeRadioConnection();
-  manager->debugRadio();
+  delay(5);
+  //manager->debugRadio();
   manager->ackControl();
-  manager->ackSensors();
+  delay(5);
+  //delay(5);
+  //manager->ackSensors();
+  //Log->i(" ");
 }

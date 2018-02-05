@@ -6,6 +6,7 @@
 Logger* Log;
 Manager* manager;
 Message_template messag;
+double k,t=0;
 void setup()
 {
   Log = new Logger();
@@ -15,5 +16,13 @@ void setup()
 
 void loop()
 {
-  manager->readRadio();
+  if(millis()-t>5){
+    manager->readRadio();
+    t=millis();
+  }
+  if(millis()-k>2000)
+  {
+    Log->i("Hi");
+    k=millis();
+  }
 }
