@@ -1,8 +1,7 @@
 //base
 #include "Manager.h"
 extern Logger* Log;
-Manager::Manager():radio(9, 10, adr1, adr2, RF24_250KBPS, RF24_PA_MIN, true),
-                  indicator(),control(),i(0),time2(0),timeCheckJoys(0),connectionState(false){
+Manager::Manager():radio(9, 10, adr1, adr2, RF24_1MBPS, RF24_PA_MAX, true),indicator(),control(),i(0),time2(0),timeCheckJoys(0),connectionState(false){
   for(int i=0; i<7; i++)
   {
     indicationData[i]=0;
@@ -11,30 +10,32 @@ Manager::Manager():radio(9, 10, adr1, adr2, RF24_250KBPS, RF24_PA_MIN, true),
   delay(300);
   indicator.updateLCD(data,7,true);
   test[0]=5; test[1]=7;
-  //while(!radio.write(&test,sizeof(test))) {}
   Log->d("Init Manager");
-  // * For use with setPALevel()
-  //enum { RF24_PA_MIN = 0,RF24_PA_LOW, RF24_PA_HIGH, RF24_PA_MAX, RF24_PA_ERROR } rf24_pa_dbm_e ;
-  //enum { RF24_1MBPS = 0, RF24_2MBPS, RF24_250KBPS } rf24_datarate_e;
+  mess.data[0]=15;
 }
+
 bool Manager::isConnectionActive(){return connectionState;}
-bool Manager::checkRadioConnection(int timeOut, int tries)
-{
-  char checkData='?';
+
+bool Manager::checkRadioConnection(int timeOut, int tries){
+  mess.mode = CHECH_CONN;
+  mess.data[0] = '?';
   int c=0;
-  radio.write(&checkData, sizeof(checkData));
+  radio.write(&mess, sizeof(mess));
   do{
     if(radio.available())
     {
-      radio.read(&checkData, sizeof(checkData));
-      if(checkData=='!')
+      radio.read(&mess, sizeof(mess));
+      if(mess.data[0]=='!')
         return true;
+      else
+        makeRadioConnection();
     }
     c++;
-    delay(timeOut);
+    delay(1);
   }while(c<tries);
   return false;
 }
+
 bool Manager::makeRadioConnection(bool isEmerge){
   if(isEmerge || radio.isTimeToCheckConnection())
   {
@@ -64,6 +65,7 @@ bool Manager::makeRadioConnection(bool isEmerge){
   }
   return connectionState;
 }
+
 Message_template Manager::readRadio() {
     if(radio.available()){
       Log->d("Read Radio");
@@ -76,44 +78,34 @@ Message_template Manager::readRadio() {
     }
     return mess;
 }
-void Manager::writeRadio(Message_template m)
-{
+
+void Manager::writeRadio(Message_template m){
   Log->d("WriteRadio()");
   mess=m;
   radio.write(&mess, sizeof(mess));
 }
+
 bool Manager::radioAvailable(){
     return radio.available();
-}
-
-bool Manager::setIndication(int k)
-{
-        int indicationDatai[] = {1230, 321, k, 130, 432};
-        indicator.updateLCD(indicationDatai, 5);
-        Log->d("Update LCD");
-        return 1;
-}
-
-void Manager::sendTest()
-{
-      mess.mode=TEST1;
-      mess.data[0]=i++;
-      //indicator.print(radio.write(&message, sizeof(message)));
-      radio.write(&mess, sizeof(mess));
-      Log->d("sendTest");
 }
 
 bool Manager::sendCommandRadio(int mode) {
   Log->d("sendCommandRadio");
   mess.mode=mode;
-  switch(mode)
-  {
-    case 74:
+  switch(mode){
+    //motors
+    case MOTOR_COMM:
       mess.data[0]=data[0];
       mess.data[1]=data[1];
       radio.write(&mess, sizeof(mess));
+      delay(3);
       break;
-    case 14:
+    case CHECH_CONN:
+      mess.data[0] = '?';
+      radio.write(&mess, sizeof(mess));
+      break;
+    //sonar
+    case SENSOR_REQUEST:
       mess.data[0]=89;
       mess.data[1]=data[4];
       mess.data[2]=data[6];
@@ -129,9 +121,13 @@ bool Manager::sendCommandRadio(int mode) {
       delay(5);
       readRadio();
       break;
-    case 91:
+    //bip
+    case SIGNAL_COMM:
+      Log->d("Bip");
       mess.data[0]=data[5];
-      radio.ackRequest(&mess, sizeof(mess),&mess);
+      Log->d("Radio valid");
+      radio.write(&mess, sizeof(mess));
+      delay(3);
       break;
     default:
       Log->e("Unknown command mode");
@@ -140,20 +136,14 @@ bool Manager::sendCommandRadio(int mode) {
   return true;
 }
 
-bool Manager::sendCommandSerial() {return 0;}
-
-bool Manager::devSerialEvent() {return 0;}
 void Manager::ackControl(){
-  //Log->d("ascControl()");
+  Log->d("ascControl()");
   if(control.getMotorsJoys(motorVals)){
-    //indicator.print(motorVals, 2);
     indicationData[0]=motorVals[0];
     indicationData[1]=motorVals[1];
   }
-  //indicationData[2]=1010;
   if(control.getSonarJoy(&sonarAngle))
   {
-    //indicator.print(sonarAngle;, 10, 0, false);
     indicationData[3]=sonarAngle;
   }
   indicator.setMovingFlagLED(control.getSignalState());
@@ -162,8 +152,8 @@ void Manager::ackControl(){
   indicationData[6]=control.getSonarState();
   handleControlResults();
 }
-void Manager::ackSensors(char number)
-{
+
+void Manager::ackSensors(char number){
     Log->d("Asc sensors");
     if(indicationData[6]==1)
     {
@@ -178,38 +168,60 @@ void Manager::ackSensors(char number)
     indicationData[2]=mess.data[1];
     indicator.updateLCD(indicationData, 7);
 }
-void Manager::handleControlResults()
-{
+
+void Manager::handleControlResults(){
+  Log->d("Handle");
   //motors
   if(indicationData[0]!=data[0] || indicationData[1]!=data[1])
   {
     data[0]=indicationData[0];
     data[1]=indicationData[1];
-    //sendCommandRadio(74);
   }
+  sendCommandRadio(MOTOR_COMM);
   //sonar
   if(indicationData[3]!=data[3] || indicationData[6]!=data[6])
   {
     data[3]=indicationData[3];
     data[6]=indicationData[6];
-    //sendCommandRadio(14);
+    sendCommandRadio(SENSOR_REQUEST);
   }
   //bip
   if(indicationData[5]!=data[5])
   {
     data[5]=indicationData[5];
-    sendCommandRadio(91);
   }
+  sendCommandRadio(SIGNAL_COMM);
+
   indicator.updateLCD(indicationData, 7);
 }
+
 void Manager::printLCD(void* message, char type){
   indicator.print(message,type);
 }
+
 void Manager::debugRadio(){
-  if(Serial.available())
-  {
+    Log->d("Start debug");
+    /*mess.data[0]++;
+    Log->d(&mess.data[0], 'd');
+    radio.write(&mess, sizeof(mess));*/
+    /*mess.mode = 91;
+    data[5] = !digitalRead(signalBut);
+    //data[5] = 0;
+    sendCommandRadio(91);*/
+    //mess.data[0]++;
+    int i = 123;
+    unsigned long t;
+    Mirf.send((byte *) &i);
+    t=millis();
+    while(Mirf.isSending()) {
+      if(millis()-t>2000){
+        Log->d("Error send");
+        break;
+      }
+    }
+    //while(radio1.isSending()) {}
     //approx. 5-6 ms longs
-    int t = Serial.read();
+    /*int t = Serial.read();
     Log->d("Received: ");
     Log->d(&t, 'd');
     //Serial.println((int)t);
@@ -222,10 +234,9 @@ void Manager::debugRadio(){
     }
     else{
       Log->e("No ascRequest");
-    }
+    }*/
     /*if(radio.write(&mess,sizeof(mess)))
     {
       radio.read(&mess, sizeof(mess));
     }*/
-  }
 }

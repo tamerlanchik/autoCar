@@ -10,7 +10,11 @@ const char epsM = 2;
 const char epsS = 3;
 const int serialRate = 9600;
 const uint8_t adr1[]="1PIPE", adr2[]="2PIPE";
-enum messageCodes {MOTOR_COMMAND, SENSOR_REQUEST, ACCOUNT_REQUEST, CHECK_CONN, TEST1};
+const char MOTOR_COMM = 51;
+const char SENSOR_REQUEST = 14;
+const char ACCOUNT_REQUEST = 126;
+const char CHECH_CONN = 93;
+const char SIGNAL_COMM = 74;
 const char commands[]={74,74,14,14,14,14,14};
 struct Message_template{
   char mode;

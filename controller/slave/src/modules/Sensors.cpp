@@ -24,6 +24,17 @@ int Sensors::getBorders()
   }
   return static_cast<int>(data);
 }
+void Sensors::getBorders(bool data[])
+{
+  Log->d("getBorders()");
+  for(int i=0;i<4;i++)
+  {
+    //data[i]=static_cast<int>(analogRead(bordersSensor[i]))/100;
+    data[i] = analogRead(bordersSensor[i])<300 ? true : false;
+    int a = analogRead(bordersSensor[i]);
+    Log->d(&a, 'd');
+  }
+}
 
 int Sensors::getSonar(int numb,int angle,int mode)
 {
@@ -58,11 +69,16 @@ void Sensors::getValue(int data[])
 //private:
 int Sensors::readSonar(int numb){
   Log->d("readSonar()");
-  /*digitalWrite(sonar_trigPin[numb-1], LOW);
+  digitalWrite(sonar_trigPin[numb-1], LOW);
   delayMicroseconds(2);
   digitalWrite(sonar_trigPin[numb-1], HIGH);
   delayMicroseconds(10);
   digitalWrite(sonar_trigPin[numb-1], LOW);
-  return pulseIn(sonar_echoPin[numb-1], HIGH)/58;*/
-  return 123;
+  return pulseIn(sonar_echoPin[numb-1], HIGH)/58;
+}
+SensorsPack Sensors::getValues() {
+  SensorsPack data;
+  getBorders(data.borders);
+  //data.sonarValue = getSonar(89,90,1);
+  return data;
 }

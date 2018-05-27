@@ -6,6 +6,7 @@
 #include "Logger.h"
 #include "Sensors.h"
 #include "Chassis.h"
+#include "Radio1Extended.h"
 class Manager{
 private:
     int motorVals[2];
@@ -24,20 +25,20 @@ private:
     int t=0;
     int test[2];
     int reloadRadioTime;
+    int movingTimeout;
 public:
     Manager();
     Message_template readRadio();
+    void initMirf();
     void testAckPayloads();
     void writeRadio(int);
     void writeRadio(Message_template);
     bool radioAvailable();
-    bool readControl();
     bool setIndication(int);
     void sendTest();
     bool sendCommandRadio();
-    bool sendCommandSerial();
-    bool devSerialEvent();
-    void ascSensors(char);
     void bip(int)const;
+    void guard();
+    void autonomousMode();
 };
 #endif

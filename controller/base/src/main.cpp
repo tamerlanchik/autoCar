@@ -7,23 +7,29 @@ int i=1;
 double time=0;
 int time2=0;
 volatile bool temp;
+
+
 Logger* Log;
 Manager* manager;
 void setup()
 {
   Log = new Logger();
+
   Log->d("BASE");
+
   manager=new Manager();
-  manager->makeRadioConnection(true);
+  //manager->makeRadioConnection(true);
 }
 
 void loop()
 {
-  manager->makeRadioConnection();
-  delay(5);
+
+  //manager->makeRadioConnection();
+  //delay(5);
   //manager->debugRadio();
+  //delay(300);
   manager->ackControl();
-  delay(5);
+  //delay(5);
   //delay(5);
   //manager->ackSensors();
   //Log->i(" ");

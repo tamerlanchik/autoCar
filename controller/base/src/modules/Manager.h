@@ -6,6 +6,7 @@
 #include "Indication.h"
 #include "pins.h"
 #include "Logger.h"
+#include "Radio1Extended.h"
 class Manager{
 private:
     int motorVals[2];
@@ -36,11 +37,7 @@ public:
     Message_template readRadio();
     void writeRadio(Message_template);
     bool radioAvailable();
-    bool setIndication(int);
-    void sendTest();
     bool sendCommandRadio(int);
-    bool sendCommandSerial();
-    bool devSerialEvent();
     void ackControl();
     void ackSensors(char=0);
     void printLCD(void*,char='s');

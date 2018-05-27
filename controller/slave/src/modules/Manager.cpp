@@ -2,11 +2,16 @@
 #include "Manager.h"
 //Logger Log(28800);
 extern Logger* Log;
-Manager::Manager():sensors(), chassis(),reloadRadioTime(0)
+extern Nrf24l Mirf;
+Manager::Manager():sensors(), chassis(),reloadRadioTime(0),movingTimeout(0)
 {
-  radio=new RadioExtended(9, 10, adr1, adr2, RF24_250KBPS, RF24_PA_MAX, false);
+  radio=new RadioExtended(2, 4, adr1, adr2, RF24_1MBPS, RF24_PA_MAX, false);
   Log->d("Manager inited");
   pinMode(buzzer, OUTPUT);
+  for(int i=0; i<4; i++)
+  {
+    pinMode(motors[i], OUTPUT);
+  }
   //Log->d("Init manager");
   //radio->initRadio(adr1, adr2, RF24_1MBPS);
   //Log->d("Init Radio");
@@ -14,41 +19,32 @@ Manager::Manager():sensors(), chassis(),reloadRadioTime(0)
 
 Message_template Manager::readRadio() {
   if(radio->available()){
+    Log->d("Radio available:");
     //radio->writeAckPayload(1, &mess, sizeof(mess));
     radio->read(&mess, sizeof(mess));
     Log->d("Package receive:");
+    Log->d(&mess.data[0], 'd');
     switch(mess.mode)
     {
-      case 123:
-        Log->d("Check package");
-        mess.data[0]*=2;
-        radio->write(&mess,sizeof(mess));
-        break;
-      case 57:
+      case CHECH_CONN:
         Log->d("Check connection");
         mess.data[0]='!';
         radio->write(&mess,sizeof(mess));
         break;
-      case 74:
+      case MOTOR_COMM:
         Log->d("Motor command");
         chassis.setValue(mess.data[0],mess.data[1]);
-        mess.data[0]=1;
-        //radio->write(&mess,sizeof(mess));
+        movingTimeout = millis()/1000;
         break;
-      case 14:
+      case SENSOR_REQUEST:
         Log->d("Sensor request");
         sensors.getValue(mess.data);
         radio->write(&mess, sizeof(mess));
         break;
-      case 15:
-        Log->d("Sensor request");
-        sensors.getValue(mess.data);
-        radio->write(&mess, sizeof(mess));
-        break;
-      case 91:
+      case SIGNAL_COMM:
         Log->d("Bip");
         bip(mess.data[0]);
-        radio->write(&mess, sizeof(mess));
+        //radio->write(&mess, sizeof(mess));
         break;
       default:
         Log->d("Unknown mode got");
@@ -61,41 +57,44 @@ Message_template Manager::readRadio() {
 bool Manager::radioAvailable(){
     return radio->available();
 }
+
 void Manager::writeRadio(int dat){
   Log->d("WriteRadio");
   message[1]=dat;
   radio->write(&message, 6);
 }
-void Manager::writeRadio(Message_template m)
-{
+
+void Manager::writeRadio(Message_template m){
   Log->d("WriteRadio()");
   mess=m;
   radio->write(&mess, sizeof(mess));
 }
-bool Manager::readControl() {return 0;}
 
 bool Manager::sendCommandRadio() {return 0;}
 
-bool Manager::sendCommandSerial() {return 0;}
-
-bool Manager::devSerialEvent() {return 0;}
-
-void Manager::ascSensors(char number=0)
-{
-        Log->d("Asc sensors");
-        message[0] = SENSOR_REQUEST;
-        message[1] = number;
-        radio->write(message, sizeof(message));
+//sound signal
+void Manager::bip(int isOn)const{
+  if(isOn){tone(buzzer, 1350);}
+  else{noTone(buzzer);}
 }
-void Manager::bip(int isOn)const
-{
-  if(isOn)
+
+//activate when there is no commands for a long time
+void Manager::guard(){
+  if(millis()/1000-movingTimeout > 1)
   {
-    digitalWrite(buzzer, 1);
-    //tone(buzzer, 1350);
+    chassis.setValue(0,0);
+    movingTimeout = millis()/1000;
   }
-  else{
-    //noTone(buzzer);
-    digitalWrite(buzzer, 0);
+}
+
+void Manager::autonomousMode() {
+  SensorsPack data = sensors.getValues();
+  if(data.borders[0] || data.borders[1] || data.borders[2] || data.borders[3])
+  {
+    Log->d(&data.borders[1], 'b');
+    chassis.setValue(0,0);
+  }else{
+    Log->d("Go");
+    chassis.setValue(-300, 0);
   }
 }

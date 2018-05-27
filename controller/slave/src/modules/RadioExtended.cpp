@@ -7,24 +7,26 @@ RadioExtended::RadioExtended(int  a, int b, const uint8_t*  adr1,
                             connectionTimeout(1),lastConnectionTime(0)
 {
   this->begin();
+  delay(500);
   this->setDataRate(r);
   this->setPALevel(l);
-  //this->setRetries(15, 5);
-  //this->setAutoAck(1);                    // Ensure autoACK is enabled
-//  this->enableAckPayload();
+  this->setRetries(3, 3);
+  //this->setCRCLength(8);
+  //this->setAutoAck(1);
+  //this->setPayloadSize(32);                   // Ensure autoACK is enabled
+  //this->enableAckPayload();
   //this->enableDynamicPayloads();
-  Message_template oo;
-  oo.mode='99';
-  //this->writeAckPayload(1,&oo,sizeof(oo));
   //role: 1-base, 0-slave
   if(role){
-    this->openReadingPipe(1,*adr2);
+    //this->openReadingPipe(1,*adr2);
     this->openWritingPipe(*adr1);
   }
   else{
     this->openReadingPipe(1,*adr1);
-    this->openWritingPipe(*adr2);
+    //this->openWritingPipe(*adr2);
   }
+  //this->powerUp();
+  delay(300);
   this->startListening();
   delay(300);
   Log->d("Radio inited");
@@ -32,6 +34,7 @@ RadioExtended::RadioExtended(int  a, int b, const uint8_t*  adr1,
 bool RadioExtended::write(void* data, int size)
 {
   this->stopListening();
+  //this->flush_tx();
   bool fl = RF24::write(data,size);
   this->startListening();
   /*this->writeAckPayload(1, data, size);
@@ -43,7 +46,7 @@ bool RadioExtended::write(void* data, int size)
       return 1;
     }
   }*/
-  return 0;
+  return fl;
 }
 bool RadioExtended::writeChecked(void* data, int size)
 {
