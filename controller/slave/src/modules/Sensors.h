@@ -12,7 +12,9 @@ private:
 public:
   Sensors();
   int getBorders();
-  int getSonar(int,int);
+  void getBorders(bool[]);
+  int getSonar(int,int,int);
   void getValue(int[]);
+  SensorsPack getValues();
 };
 #endif
