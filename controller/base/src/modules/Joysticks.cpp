@@ -12,7 +12,8 @@ bool Joysticks::getMotorsJoys(int val[]) {
     bool isChanged=false;
     for(int i=0; i<2; i++){
         val[i]=analogRead(motorJoys[i])-motorJoysNeutral[i];
-        val[i]=map(val[i], 0, 1023, 0, 100);
+        //val[i]=analogRead(motorJoys[i]);
+        //val[i]=map(val[i], -512, 512, 0, 255);
         if(abs(val[i]-preMotorsVals[i])>epsM){
             isChanged = true;
             preMotorsVals[i] = val[i];

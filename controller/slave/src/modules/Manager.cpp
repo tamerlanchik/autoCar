@@ -2,7 +2,6 @@
 #include "Manager.h"
 //Logger Log(28800);
 extern Logger* Log;
-extern Nrf24l Mirf;
 Manager::Manager():sensors(), chassis(),reloadRadioTime(0),movingTimeout(0)
 {
   radio=new RadioExtended(2, 4, adr1, adr2, RF24_1MBPS, RF24_PA_MAX, false);
@@ -19,11 +18,11 @@ Manager::Manager():sensors(), chassis(),reloadRadioTime(0),movingTimeout(0)
 
 Message_template Manager::readRadio() {
   if(radio->available()){
-    Log->d("Radio available:");
+    //Log->d("Radio available:");
     //radio->writeAckPayload(1, &mess, sizeof(mess));
     radio->read(&mess, sizeof(mess));
-    Log->d("Package receive:");
-    Log->d(&mess.data[0], 'd');
+    //Log->d("Package receive:");
+    //Log->d(&mess.data[0], 'd');
     switch(mess.mode)
     {
       case CHECH_CONN:
@@ -34,7 +33,10 @@ Message_template Manager::readRadio() {
       case MOTOR_COMM:
         Log->d("Motor command");
         chassis.setValue(mess.data[0],mess.data[1]);
-        movingTimeout = millis()/1000;
+        movingTimeout = millis()/100;
+        int trt;
+        trt = analogRead(A4);
+        Log->d(&trt, 'd');
         break;
       case SENSOR_REQUEST:
         Log->d("Sensor request");
@@ -80,10 +82,10 @@ void Manager::bip(int isOn)const{
 
 //activate when there is no commands for a long time
 void Manager::guard(){
-  if(millis()/1000-movingTimeout > 1)
+  if(millis()/100-movingTimeout > 1)
   {
     chassis.setValue(0,0);
-    movingTimeout = millis()/1000;
+    movingTimeout = millis()/100;
   }
 }
 

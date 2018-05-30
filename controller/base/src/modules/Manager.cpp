@@ -96,8 +96,9 @@ bool Manager::sendCommandRadio(int mode) {
     //motors
     case MOTOR_COMM:
       mess.data[0]=data[0];
-      mess.data[1]=data[1];
+      mess.data[1]=-data[1];
       radio.write(&mess, sizeof(mess));
+      analogWrite(6, map(data[0], -512, 521, 0, 255));
       delay(3);
       break;
     case CHECH_CONN:
@@ -209,16 +210,6 @@ void Manager::debugRadio(){
     //data[5] = 0;
     sendCommandRadio(91);*/
     //mess.data[0]++;
-    int i = 123;
-    unsigned long t;
-    Mirf.send((byte *) &i);
-    t=millis();
-    while(Mirf.isSending()) {
-      if(millis()-t>2000){
-        Log->d("Error send");
-        break;
-      }
-    }
     //while(radio1.isSending()) {}
     //approx. 5-6 ms longs
     /*int t = Serial.read();

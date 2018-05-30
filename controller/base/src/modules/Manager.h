@@ -6,7 +6,6 @@
 #include "Indication.h"
 #include "pins.h"
 #include "Logger.h"
-#include "Radio1Extended.h"
 class Manager{
 private:
     int motorVals[2];

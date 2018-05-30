@@ -6,7 +6,6 @@
 #include "Logger.h"
 #include "Sensors.h"
 #include "Chassis.h"
-#include "Radio1Extended.h"
 class Manager{
 private:
     int motorVals[2];
