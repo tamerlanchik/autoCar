@@ -15,7 +15,7 @@ class Content(QWidget):
     res =  pyqtSignal(int, int)
     send =  pyqtSignal(str,  int)
     showMessage =  pyqtSignal(str)
-    windows =  [1, 1, 0, 0, 0, 0]
+    windows =  [1, 0, 0, 0, 0, 0]
     #windows[0]=True
     def __init__(self,  parent, screen):
         super().__init__(parent)
