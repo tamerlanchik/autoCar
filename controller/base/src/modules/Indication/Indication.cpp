@@ -39,9 +39,17 @@ void Indication::print(bool a){
   //lcd.print(a);
 }*/
 void Indication::print(void* data, char mode){
-  if(millis()-lcdLatestUpd>lcdUpdateTimeout){
+  lcd.print("N");
+  /*if(millis()-lcdLatestUpd>lcdUpdateTimeout){
     printEmerge(data, mode);
+  }*/
+}
+void Indication::print(String message){
+  if(millis()-lcdLatestUpd>lcdUpdateTimeout){
+    lcd.clear();
+    lcd.print(message.c_str());
   }
+  //lcd.print("J");
 }
 
 void Indication::printEmerge(void* data, char mode){

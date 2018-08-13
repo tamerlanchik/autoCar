@@ -5,17 +5,23 @@
 //Nano SWM: 3.5.6.9.10.11
 
 //pins
+//REMEMBER: PIN 10 ONLY OUTPUT!
 const char sonarServoPin[] = {9};
-const char sonar_trigPin[] = {0};
-const char sonar_echoPin[] = {8};
-const char bordersSensor[] = {0,1,2,3};
-const char motors[] = {1,2,3,4, 5, 6};
+const char sonar_trigPin[] = {15};
+const char sonar_echoPin[] = {7};
+const char borderSensorPins[] = {3, 4, 5, 1, 2};
+const char motors[] = {16,17,18,19, 5, 6};
 const char buzzer = 3;
 const char SHIFT_SS = 7;
 const char SHIFT_LOCK = 8;
 
 //settings
-const int sonarTimeout = 50;   // [ms]
-const char servoRange[1][2] = { {5, 180}};
+const int sonarTimeout = 10;   // [ms]
+const int sonarMaxDist = 100;
+const unsigned char servoRange[1][2] = { {5, 180}};
+const float dL = 0.02105;
+const bool areMotorsConnectedThroughtDOS = 0;
+const bool isSonarConnectedThroughtDOS = 0;
+const bool isDOSConnected = 0;
 
 #endif

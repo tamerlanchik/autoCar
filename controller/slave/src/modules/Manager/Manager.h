@@ -6,9 +6,10 @@
 #include <Sensors.h>
 #include "Chassis.h"
 #include "DigitalOutShield.h"
+#include "Model.h"
 #include <pins.h>
 class Manager{
-private:
+public:
     DigitalOutShield dos;
     int motorVals[2];
     int sonarAngle;
@@ -17,24 +18,27 @@ private:
     bool isMovingFlag;
     int sensorData[3];
     int urgentData[3];
-    int message[3];
     Message_template mess;
+    Message message;
     RadioExtended* radio;
     Sensors sensors;
     Chassis chassis;
     int i=0;
     int t=0;
     int test[2];
-    int reloadRadioTime;
     int movingTimeout;
+    int reloadRadioTime;
     int prevData;
-public:
+    float speed[2];
+    Model* model;
+    bool isAnswerNeeded;
+    byte mSerialMessage[32];
+
     Manager();
-    Message_template readRadio();
+    void readRadio();
+    void setModel(Model*);
     void initMirf();
     void testAckPayloads();
-    void writeRadio(int);
-    void writeRadio(Message_template);
     bool radioAvailable();
     bool setIndication(int);
     void sendTest();
@@ -43,5 +47,11 @@ public:
     void guard();
     void autonomousMode();
     void testing();
+    Sensors* getSensorMaster();
+    Chassis* getChassisMaster();
+    void watchBorders(unsigned int);
+    void shedulled();
+    void regulator();
+    void updateModel();
 };
 #endif

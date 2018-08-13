@@ -1,8 +1,8 @@
 #include "Sensors.h"
 extern Logger* Log;
 
-Sensors::Sensors():sonar1Servo(){
-  for(char i = 0; i < sonarCount; i++){
+Sensors::Sensors():sonar1Servo(),dos(NULL),encoderLastTimeChecked(0){
+  for(unsigned int i = 0; i < sonarCount; i++){
     lastSonarAck[i] = 0;
   }
   currAngle=0;
@@ -12,27 +12,53 @@ Sensors::Sensors():sonar1Servo(){
 void Sensors::init(){
   sonar1Servo.attach(sonarServoPin[0]);
   pinMode(sonar_echoPin[0], INPUT);
+  pinMode(sonar_trigPin[0], OUTPUT);
   Log->d("Init Sensors");
 }
 
-int Sensors::getBorders(){
+void Sensors::update(){
+  enc->calcSpeed();
+}
+void Sensors::shedulled(){
+  enc->calcSpeed();
+}
+
+int Sensors::getBorders(bool t){
   Log->d("getBorders()->int");
   char data=0;
   for(int i=0;i<4;i++)
   {
     data*=2;
-    data+=static_cast<int>(analogRead(bordersSensor[i]))/100;
+    data+=static_cast<int>(analogRead(borderSensorPins[i]))/100;
   }
   return static_cast<int>(data);
 }
 
-void Sensors::getBorders(bool data[]){
+void Sensors::getBorders(bool data[], unsigned int count){
   Log->d("getBorders(bool)");
-  for(int i=0;i<4;i++)
+  int a;
+  for(unsigned int i=0;i<count;i++)
   {
-    data[i] = analogRead(bordersSensor[i])<300 ? true : false;
-    int a = analogRead(bordersSensor[i]);
+    a = analogRead(borderSensorPins[i]);
+    data[i] = a<300 ? true : false;
     Log->d(&a, 'd');
+  }
+}
+
+bool* Sensors::getBorders(){
+  //Log->d("bool* getBorders()");
+  this->updateBorderValues();
+  return borderValues;
+}
+
+void Sensors::updateBorderValues(){
+  //Log->d("updateBorderValues");
+  int a;
+  for(unsigned int i=0; i<borderSensorsCount; i++)
+  {
+    a = analogRead(borderSensorPins[i]);
+    borderValues[i] = a<500 ? true : false;
+    //Log->d(&a, 'd');
   }
 }
 
@@ -74,7 +100,7 @@ void Sensors::getValue(int data[]){
       data[1]=getSonar(data[0],data[1],data[2]);
       break;
     case BORDERS:
-      data[1]=getBorders();
+      data[1]=getBorders(0);
       break;
     default:
       Log->d("Unknown sensor code");
@@ -94,23 +120,43 @@ void Sensors::rotate(int numb, int angle, bool isWaitable){
   currAngle = angle;
 }
 
+void Sensors::updateSpeed(unsigned long alertCount[]){
+  for(unsigned int i = 0; i<2; i++){
+    //precountAlert[i] = counterAlert[i];
+    //counterAlert[i] = alertCount[i];
+  }
+}
+
 //private:
 int Sensors::readSonar(int numb, int maxDist){
-  maxDist = 200;
   Log->d("readSonar()");
+  if(numb<0 || numb > sonarCount-1){
+    Log->e("Wrong 'numb' value");
+  }
+
   delay(MAX((int)(sonarTimeout - (millis() - lastSonarAck[numb])), 0));
-  //int ppp = MAX(-10, 0);
-  //delay(50);
-  //if(millis() - lastSonarAck[numb] > sonarTimeout){
+
+  if(isSonarConnectedThroughtDOS){
     dos->write(sonar_trigPin[numb], 0);
     delayMicroseconds(2);
     dos->write(sonar_trigPin[numb], 1);
     delayMicroseconds(10);
     dos->write(sonar_trigPin[numb], 0);
-    int a = pulseIn(sonar_echoPin[numb], HIGH, maxDist*60)/58;  //максимальное расстояние ~206см
-    lastSonarAck[numb] = millis();
-    return a;
-  /*}else{
-    return -1;
-  }*/
+  }else{
+    digitalWrite(sonar_trigPin[numb], 0);
+    delayMicroseconds(2);
+    digitalWrite(sonar_trigPin[numb], 1);
+    delayMicroseconds(10);
+    digitalWrite(sonar_trigPin[numb], 0);
+  }
+  unsigned int distance =  pulseIn(sonar_echoPin[numb], HIGH, sonarMaxDist*60)/58;  //максимальное расстояние ~206см
+  lastSonarAck[numb] = millis();
+}
+
+void Sensors::setEncoder(Encoder* encoder){
+  enc = encoder;
+}
+
+Encoder* Sensors::getEncoder(){
+  return enc;
 }

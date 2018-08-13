@@ -1,9 +1,9 @@
 //base
+#define DEBUG
 #include <Arduino.h>
 #include "Manager.h"
 #include "pins.h"
 #include <config.h>
-#include <TimerOne.h>
 unsigned long tim = 0;
 
 class ListItem{
@@ -61,7 +61,6 @@ class List{
 
 };
 
-List l;
 char* t;
 Logger* Log;
 Manager* manager;
@@ -70,30 +69,31 @@ void setup()
   Log = new Logger();
 
   Log->d("BASE");
-  Timer1.initialize(300000);
   manager=new Manager();
-  pinMode(14, OUTPUT);
   //manager->makeRadioConnection(true);
 }
 
 void loop()
 {
+  manager->retranslate();
+  //manager->readSerial();
   //manager->indicateFreeze();
   //manager->makeRadioConnection();
   //delay(5);
   //manager->debugRadio();
   //delay(300);
   //manager->ackControl();
-  manager->maintainRadioConnection();
+  //manager->maintainRadioConnection();
 
-  /*if(manager->checkRadioConnection(2, 10)){
+  /*if(manager->checkRadioConnection(2)){
     Log->d("Connection is active");
   }else{
     Log->e("No connection");
-  }*/
+  }
+  delay(100);*/
   //delay(5);
   //delay(5);
-  manager->ackSensors();
-  delay(50);
+  //manager->ackSensors();
+  //delay(50);
   //Log->i(" ");
 }

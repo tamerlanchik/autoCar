@@ -16,13 +16,13 @@ struct MOVING_MODES{
 class Chassis
 {
 private:
-  int motorVal[2];
+  int motorVal[motorChannelsCount];
   DigitalOutShield* dos;
   bool t;
   MOVING_MODES Modes = {
     {0,0,0,0},
-    {1,0,1,0},
     {0,1,0,1},
+    {1,0,1,0},
     {1,0,0,1},
     {0,1,1,0}
   };
@@ -32,6 +32,10 @@ public:
   void init();
   void setDOS(DigitalOutShield*);
   void setValue(int,int);
+  void setValue(int[]);
+  void setValue(float[]);
+  void setValue(ChassisData*);
+  int convertSpeed(float);
   void getValue(int[]);
   void test();
   static int F1(int);

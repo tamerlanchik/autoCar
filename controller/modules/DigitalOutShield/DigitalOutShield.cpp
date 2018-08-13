@@ -13,7 +13,6 @@ DigitalOutShield::DigitalOutShield(unsigned char blocksCount, unsigned char sign
 }
 
 void DigitalOutShield::init(){
-  Serial.begin(9600);
   pinMode(SS, OUTPUT);
   values = new bool[8*this->count];
   for(int i=0; i<8*(this->count); i++){
@@ -48,9 +47,13 @@ bool DigitalOutShield::writeShift(){
     for(int j=7; j>=0; j--){
       data=data<<1;
       data = data|values[i*8+j];
-      Serial.print(values[i*8+j], BIN);
+      #ifdef DEBUG
+        Serial.print(values[i*8+j], BIN);
+      #endif
     }
-    Serial.println();
+    #ifdef DEBUG
+      Serial.println();
+    #endif
     writeSPI(data);
   }
   return true;
@@ -59,6 +62,7 @@ bool DigitalOutShield::writeShift(){
 void DigitalOutShield::writeSPI(byte data){
   digitalWrite(SS, LOW);
   SPI.transfer(data);
+  Serial.println(data);
   digitalWrite(SS, HIGH);
 }
 

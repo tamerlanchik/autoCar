@@ -8,13 +8,14 @@ freezeTime(0), freezeLedState(false),indicationData(){
     data[i]=0;
   }
   delay(100);
+  mMessage = new Message();
   Log->d("Init Manager");
 }
 
 bool Manager::isConnectionActive(){return connectionState;}
 
 bool Manager::checkRadioConnection(unsigned int timeout){
-  mess.mode = CHECH_CONN;
+  mess.mode = 123;
   mess.data[0] = '?';
   radio.write(&mess, sizeof(mess));
   unsigned long startTime=millis();
@@ -23,6 +24,7 @@ bool Manager::checkRadioConnection(unsigned int timeout){
       radio.read(&mess, sizeof(mess));
       if(mess.data[0]=='!'){
         connectionState = true;
+        Log->d("Connecion alive!");
         return true;
       }
       else{
@@ -31,7 +33,7 @@ bool Manager::checkRadioConnection(unsigned int timeout){
       }
     }
   }
-  Log->e("No check answer");
+  //Log->e("No check answer");
   connectionState = false;
   return 0;
 }
@@ -62,9 +64,9 @@ bool Manager::radioAvailable(){
 bool Manager::sendCommandRadio(int mode) {
   Log->d("sendCommandRadio");
   mess.mode=mode;
-  switch(mode){
+  /*switch(mode){
     //motors
-    case MOTOR_COMM:
+    case MessageType.MOTOR_COMM:
       mess.data[0]=data[0];
       mess.data[1]=-data[1];
       if(!radio.write(&mess, sizeof(mess))){
@@ -72,12 +74,12 @@ bool Manager::sendCommandRadio(int mode) {
       }
       delay(3);
       break;
-    case CHECH_CONN:
+    case MessageType.CHECH_CONN:
       mess.data[0] = '?';
       radio.write(&mess, sizeof(mess));
       break;
     //sonar
-    case SENSOR_REQUEST:
+    case MessageType.SENSOR_REQUEST:
       mess.data[0]=89;
       mess.data[1]=data[4];
       mess.data[2]=data[6];
@@ -94,7 +96,7 @@ bool Manager::sendCommandRadio(int mode) {
       readRadio();
       break;
     //bip
-    case SIGNAL_COMM:
+    case MessageType.SIGNAL_COMM:
       Log->d("Bip");
       mess.data[0]=data[5];
       Log->d("Radio valid");
@@ -104,7 +106,7 @@ bool Manager::sendCommandRadio(int mode) {
     default:
       Log->e("Unknown command mode");
       return false;
-  }
+  }*/
   return true;
 }
 
@@ -141,7 +143,7 @@ void Manager::maintainRadioConnection(bool isEmerge){
 
 void Manager::ackSensors(char number){
     //Log->d("Asc sensors");
-    mess.mode = SENSOR_REQUEST;
+    //mess.mode = SENSOR_REQUEST;
     mess.data[0] = DISTANCE1;
     mess.data[2] = ROTATE_MEASURE;
     bool flag = 0;
@@ -170,11 +172,11 @@ void Manager::ackSensors(char number){
 void Manager::handleControlResults(){
   Log->d("Handle");
   //motors
-  sendCommandRadio(MOTOR_COMM);
+  //sendCommandRadio(MessageType.MOTOR_COMM);
   //sonar
-  sendCommandRadio(SENSOR_REQUEST);
+  //sendCommandRadio(SENSOR_REQUEST);
   //bip
-  sendCommandRadio(SIGNAL_COMM);
+  //sendCommandRadio(SIGNAL_COMM);
 
   indicator.updateLCD(indicationData);
 }
@@ -195,3 +197,40 @@ void Manager::indicateFreeze(){
       freezeTime = millis();
   }
 }
+
+void Manager::retranslate(){
+  if(readSerial()){
+    radio.write(mSerialMessage, 32);
+  }
+}
+
+bool Manager::readSerial(){
+  if(Serial.available()){
+    //byte mode = Serial.read();
+    unsigned int i = 0;
+    while(i<32){
+      if(Serial.available() > 0){
+        mSerialMessage[i] = Serial.read();
+        if(mSerialMessage[i] == ';') break;
+        i++;
+      }
+    }
+    Serial.println(String((char*)mSerialMessage));
+    //radio.write(&mSerialMessage, 64);
+
+    /*if(mode == '#'){
+      mMessage->inflateMessage(mode, mSerialMessage);
+      //parseJoystickMessage(mSerialMessage);
+    }*/
+    return true;
+  }
+  return false;
+}
+
+/*void Manager::parseJoystickMessage(char t[]){
+  //struct: #### ####;
+  float a = getFloatFromByteArray(t, 0);
+  float b = getFloatFromByteArray(t, 4);
+
+  indicator.print("J: " +String(a) + " " + String(b));
+}*/

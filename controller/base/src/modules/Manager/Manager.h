@@ -7,6 +7,7 @@
 #include "pins.h"
 #include <config.h>
 #include "Logger.h"
+using namespace std;
 class Manager{
 private:
     int motorVals[2];
@@ -31,6 +32,8 @@ private:
     unsigned long freezeTime;
     bool freezeLedState;
     Indication_template indicationData;
+    byte mSerialMessage[32];
+    Message* mMessage;
 public:
     Manager();
     bool checkRadioConnection(unsigned int);
@@ -47,5 +50,10 @@ public:
     void handleControlResults();
     void debugRadio();
     void indicateFreeze();
+    bool readSerial();
+    void retranslate();
+    //void reverseString(char[],int);
+    //void parseJoystickMessage(char[]);
+    //float getFloatFromByteArray(char[],unsigned int);
 };
 #endif

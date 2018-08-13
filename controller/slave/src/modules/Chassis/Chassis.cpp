@@ -15,32 +15,42 @@ void Chassis::init(){
 void Chassis::setDOS(DigitalOutShield* d){
   dos = d;
 }
+void Chassis::setValue(int val[]){
+  this->setValue(val[0],val[1]);
+}
+void Chassis::setValue(float val[]){
+  int data[2];
+  data[0] = convertSpeed(val[0]);
+  data[1] = convertSpeed(val[1]);
+  setValue(data);
+}
 
+void Chassis::setValue(ChassisData* data){
+  setValue(data->getValue(0), data->getValue(1));
+  /*for(unsigned int i = 0; i < motorChannelsCount; i++){
+    motorVals[i] = data->getValue(i);
+  }*/
+}
+
+int Chassis::convertSpeed(float a){
+  return 50;
+}
 void Chassis::setValue(int a, int b){
-  int epsRotate = 100;
-  int epsMove = 50;
-  Log->d("setValue - MOTORS");
-  //analogWrite(motors[5], map(-a, -512, 512, 0, 255));
-  int speedA= abs(a);
-  int speedB = abs(b);
-  speedA = map(speedA, 0, 521, 0, 255);
-  speedA = F1(speedA);
+  a = constrain(a, -255, 255);
+  b = constrain(b, -255, 255);
 
-  speedB = map(speedB, 0, 524, 0, 255);
-  //speedB = F1(speedB);
-  double spB = speedB/255 * 4 / 2+1;;
-  //Диапазон масштаба: от 1.5 до 5
-  if(b>0){
-    void;
-  }else{
-    spB = 1/spB;
-  }
+  int epsRotate = 30;
+  int epsMove = 30;
+  //Log->d("setValue - MOTORS");
+
+  int speedA = abs(a);
+  int speedB = abs(b);
   if(abs(a) < epsMove){
+    analogWrite(motors[4], speedB);
+    analogWrite(motors[5], speedB);
     if(abs(b) < epsRotate){
       writeMotors(Modes.Stop);
     }else{
-      analogWrite(motors[4], speedB);
-      analogWrite(motors[5], speedB);
       if(b > 0){
         writeMotors(Modes.Right);
       }else{
@@ -48,116 +58,18 @@ void Chassis::setValue(int a, int b){
       }
     }
   }else{
+    analogWrite(motors[4], speedA);
+    analogWrite(motors[5], speedA);
     if(a > 0){
       writeMotors(Modes.Forward);
-      //analogWrite(motors[4], MIN(speedA*(spB), 255));
-    //  analogWrite(motors[5], MIN(speedA/(spB), 255));
-    analogWrite(motors[4], MIN(speedA*2, 255));
-    analogWrite(motors[5], MIN(speedA, 255));
     }else{
       writeMotors(Modes.Backward);
-      analogWrite(motors[4], speedA/spB);
-      analogWrite(motors[5], speedA*spB);
     }
   }
-  /*if(b<5 && b>-5){
-      if(a>5){
-        dos->add(0, 1);
-        dos->add(1, 0);
-        dos->add(2, 1);
-        dos->add(3, 0);
-        Log->d("1");
-      }
-      else if(a<-5){
-        dos->add(0, 0);
-        dos->add(1, 1);
-        dos->add(2, 0);
-        dos->add(3, 1);
-        Log->d("2");
-      }
-      else if(a>=-5 && a<=5){
-        dos->add(0, 0);
-        dos->add(1, 0);
-        dos->add(2, 0);
-        dos->add(3, 0);
-        Log->d("3");
-      }
-    }
-    else{
-      if(b>5){
-        dos->add(0, 1);
-        dos->add(1, 0);
-        dos->add(2, 0);
-        dos->add(3, 1);
-        Log->d("4");
-      }
-      else if(b<-5){
-        dos->add(0, 0);
-        dos->add(1, 1);
-        dos->add(2, 1);
-        dos->add(3, 0);
-        Log->d("5");
-      }
-      else if(b>=-5 && a<=5){
-        dos->add(0, 0);
-        dos->add(1, 0);
-        dos->add(2, 0);
-        dos->add(3, 0);
-        Log->d("6");
-      }
-    }
-    dos->detach();
-    dos->send();
-    dos->attach();
-    */
-  /*if(b<5 && b>-5){
-    if(a>5){
-        digitalWrite(motors[0],1);
-        digitalWrite(motors[1],0);
-        digitalWrite(motors[2],1);
-        digitalWrite(motors[3],0);
-    }
-    else if(a<-5){
-      digitalWrite(motors[0],0);
-      digitalWrite(motors[1],1);
-      digitalWrite(motors[2],0);
-      digitalWrite(motors[3],1);
-    }
-    else if(a>=-5 && a<=5){
-      digitalWrite(motors[0],0);
-      digitalWrite(motors[1],0);
-      digitalWrite(motors[2],0);
-      digitalWrite(motors[3],0);
-    }
-  }
-  else{
-    if(b>5){
-        digitalWrite(motors[0],1);
-        digitalWrite(motors[1],0);
-        digitalWrite(motors[2],0);
-        digitalWrite(motors[3],1);
-    }
-    else if(b<-5){
-      digitalWrite(motors[0],0);
-      digitalWrite(motors[1],1);
-      digitalWrite(motors[2],1);
-      digitalWrite(motors[3],0);
-    }
-    else if(b>=-5 && a<=5){
-      digitalWrite(motors[0],0);
-      digitalWrite(motors[1],0);
-      digitalWrite(motors[2],0);
-      digitalWrite(motors[3],0);
-    }
-  }*/
-  //int speed = map(abs(a), 0, 521, 0, 255);
+
   int speed = abs(a);
   speed = F1(speed);
   speed = map(speed, 0, 521, 0, 255);
-  /*if(abs(b)<50)
-    b = 0;*/
-  //analogWrite(motors[4], speed);
-  //analogWrite(motors[5], speed);
 }
 
 void Chassis::getValue(int val[]){
@@ -187,10 +99,14 @@ void Chassis::test(){
 
 //private
 void Chassis::writeMotors(bool values[]){
-  for(unsigned char i = 0; i<4; i++){
-    dos->add(i, values[i]);
+  if(areMotorsConnectedThroughtDOS){
+    for(unsigned char i = 0; i<4; i++){
+      dos->add(motors[i], values[i]);
+    }
+    dos->send();
+  }else{
+    for(unsigned char i = 0; i<4; i++){
+      digitalWrite(motors[i], values[i]);
+    }
   }
-  dos->detach();
-  dos->send();
-  dos->attach();
 }
