@@ -5,6 +5,6 @@
 
 //pins
 //REMEMBER: PIN 10 ONLY OUTPUT!
-const byte motorPins[] = {4,7,8,9, 5, 6};
+const byte motorPins[] = {14,15,16,17, 5, 6};
 
 #endif

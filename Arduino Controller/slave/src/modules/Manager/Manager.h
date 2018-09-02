@@ -10,5 +10,6 @@ private:
 public:
     Manager();
     void testing();
+    int f(long long, long long);
 };
 #endif
