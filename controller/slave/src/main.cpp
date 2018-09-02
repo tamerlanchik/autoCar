@@ -32,12 +32,12 @@ void setup(){
   Log = new Logger();
   Log->d("CAR");
   model = new Model();
-  encoder = new Encoder(model->linearSpeed);
+  //encoder = new Encoder(model->linearSpeed);
   manager = new Manager();
-  manager->getSensorMaster()->setEncoder(encoder);
+  //manager->getSensorMaster()->setEncoder(encoder);
   //manager->setModel(&model);
-  attachInterrupt(0, left, HIGH);
-  attachInterrupt(1, right, CHANGE);
+  //attachInterrupt(0, left, HIGH);
+  //attachInterrupt(1, right, CHANGE);
   //s.attach(9);
   //delay(3000);
 }
