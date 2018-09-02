@@ -9,6 +9,9 @@ Chassis::Chassis(){
 }
 
 void Chassis::init(){
+  for(byte i = 0; i<6; i++){
+    pinMode(motors[i], OUTPUT);
+  }
   Log->d("Init Chassis");
 }
 

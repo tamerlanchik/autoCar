@@ -33,19 +33,24 @@ void setup(){
   Log->d("CAR");
   model = new Model();
   //encoder = new Encoder(model->linearSpeed);
-  manager = new Manager();
+  //manager = new Manager();
   //manager->getSensorMaster()->setEncoder(encoder);
   //manager->setModel(&model);
   //attachInterrupt(0, left, HIGH);
   //attachInterrupt(1, right, CHANGE);
   //s.attach(9);
   //delay(3000);
+  pinMode(9, OUTPUT);
 }
 
 void loop()
 {
   //manager->testing();
-  manager->readRadio();
+  digitalWrite(9, 1);
+  delay(1000);
+  digitalWrite(9, 0);
+  delay(500);
+  //manager->readRadio();
 }
 void left(){
   encoder->handleEvent(0);

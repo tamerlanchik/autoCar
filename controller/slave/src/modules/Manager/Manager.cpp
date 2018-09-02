@@ -10,14 +10,14 @@ movingTimeout(0),
 reloadRadioTime(0),
 prevData(0),
 isAnswerNeeded(0){
-  radio=new RadioExtended(8,4, adr1, adr2, RF24_1MBPS, RF24_PA_MAX, false);
+  //radio=new RadioExtended(8,4, adr1, adr2, RF24_1MBPS, RF24_PA_MAX, false);
 
-  dos.init();
+  //dos.init();
 
   chassis.init();
-  if(isDOSConnected) chassis.setDOS(&dos);
+  //if(isDOSConnected) chassis.setDOS(&dos);
 
-  sensors.init();
+  //sensors.init();
   //if(isDOSConnected) sensors.setDOS(&dos);
 
 
@@ -111,107 +111,14 @@ void Manager::autonomousMode() {
 }
 
 void Manager::testing(){
-  /*float v;
-  unsigned long t = 0;
-  for(int i = 50; i < 225; i++){
-    chassis.setValue(0, i);
-    v=0;
-    t = millis();
-    for(int j = 0; j<10; j++){
-      sensors.update();
-      v+= sensors.enc->speed[1];
-      delay(600);
-    }
-    v = v/10;
-    Serial.print(i);
-    Serial.print("->");
-    Serial.print(v);
-    Serial.print(", k=");
-    Serial.println(i/v);
-  }*/
-  /*const int N=5;
-  for(int i=20; i<=150; i+=2){
-    float data[N];
-    float d =0;
-    float middle=0, middle1=0;
-    int minD=0,maxD=0;
-    int countZeros = 0;
-    int countPics = 0;
-    for(int j=0; j<N; j++){
-      data[j]=sensors.getSonar(1, i, ROTATE_MEASURE);
-      middle+=data[j];
-      maxD = data[j]>data[maxD]?j:maxD;
-      minD = data[j]<data[minD]?j:minD;
-      if(data[j] == 0){
-        countZeros++;
-      }
-      if(data[j] > sonarMaxDist){
-        countPics++;
-      }
-    }
-    middle/=N;
-
-    //float d =0;
-    Serial.print("#");
-    Serial.print(i);
-    Serial.print(":");
-    //Serial.print(middle);
-    //Serial.println("&");
-    //Serial.print('&');
-    /*for(int i=0; i<N; i++){
-      Serial.print(data[i]);
-      Serial.print(':');
-    }
-    Serial.print(middle);
-    Serial.print(':');*/
-    /*if(countZeros > 2){
-      if(countPics > 0 || data[maxD] == 0){
-        for(int j=0; j<N; j++){
-          data[j] = 1000;
-        }
-      }
-    }
-    if(middle/fabs(middle-data[maxD]) < 2 ){
-      data[maxD] = middle;
-    }
-    if(middle/fabs(middle-data[minD]) < 2 ){
-      data[minD] = middle;
-    }
-    middle = 0;
-    for(int i=0; i<N; i++){
-      middle+=data[i];
-    }
-    middle/=N;
-    Serial.print(middle);
-    //Serial.print(':');
-    Serial.println('&');
-  }
-  //dos.write(B11111111);
-  */
-  /*delay(300);
-  dos.write(B00000000);
-  delay(300);*/
-
-  const double R = 100; //mm
-  //unsigned long counterAlert = sensors.getEncoder()->counterAlert[0];
-  unsigned long counterAlert = sensors.getEncoder()->counterAlert[0];
-  chassis.setValue(0, 100);
-  while((sensors.getEncoder()->counterAlert[0] - counterAlert)*5.35 < 3.14*R) {Serial.println(sensors.getEncoder()->counterAlert[0]); delay(10);}
-  chassis.setValue(0,0);
-  delay(2000);
-
-
-  /*chassis.setValue(200, 200);
-  delay(1000);
-  chassis.setValue(0,0);
-  delay(1000);
-  chassis.setValue(-100, -100);
-  delay(300);
-  chassis.setValue(-250, -250);
-  delay(1000);
-  chassis.setValue(0,0);
-  delay(1000);*/
-
+  chassis.setValue(200, 0);
+  delay(1500);
+  chassis.setValue(0, 0);
+  delay(500);
+  chassis.setValue(-200, 0);
+  delay(1500);
+  chassis.setValue(0, 0);
+  delay(500);
 }
 
 void Manager::watchBorders(unsigned int count){
